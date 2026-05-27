@@ -1,0 +1,474 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		95692F3E2FC26CBB00112CE6 /* CLAUDE.md in Resources */ = {isa = PBXBuildFile; fileRef = 95692F3D2FC26CBB00112CE6 /* CLAUDE.md */; };
+		956D581B2FC3A8F300E2503F /* SkyScopeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 956D581A2FC3A8F300E2503F /* SkyScopeApp.swift */; };
+		956D581D2FC3A8FC00E2503F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 956D581C2FC3A8FC00E2503F /* ContentView.swift */; };
+		956D58282FC3AED100E2503F /* ListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 956D58232FC3A96100E2503F /* ListView.swift */; };
+		956D58292FC3AED100E2503F /* FlightAwareService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 956D58162FC3A8B600E2503F /* FlightAwareService.swift */; };
+		956D582A2FC3AED100E2503F /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 956D58222FC3A94500E2503F /* MapView.swift */; };
+		956D582B2FC3AED100E2503F /* AircraftAnnotation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 956D58202FC3A91D00E2503F /* AircraftAnnotation.swift */; };
+		956D582C2FC3AED100E2503F /* Aircraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = 956D58102FC3A82100E2503F /* Aircraft.swift */; };
+		956D582D2FC3AED100E2503F /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 956D58122FC3A85200E2503F /* AppSettings.swift */; };
+		956D582E2FC3AED100E2503F /* AircraftDetailSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 956D58212FC3A92F00E2503F /* AircraftDetailSheet.swift */; };
+		956D582F2FC3AED100E2503F /* FavoritesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 956D58242FC3A97A00E2503F /* FavoritesView.swift */; };
+		956D58302FC3AED100E2503F /* AircraftDataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 956D58192FC3A8E100E2503F /* AircraftDataStore.swift */; };
+		956D58312FC3AED100E2503F /* LocationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 956D58142FC3A86B00E2503F /* LocationService.swift */; };
+		956D58322FC3AED100E2503F /* WhatsOverMeIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 956D58272FC3A9AC00E2503F /* WhatsOverMeIntent.swift */; };
+		956D58332FC3AED100E2503F /* Favorite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 956D58112FC3A82E00E2503F /* Favorite.swift */; };
+		956D58342FC3AED100E2503F /* OpenSkyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 956D58152FC3A88B00E2503F /* OpenSkyService.swift */; };
+		956D58352FC3AED100E2503F /* APIRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 956D58172FC3A8CE00E2503F /* APIRouter.swift */; };
+		956D58362FC3AED100E2503F /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 956D58252FC3A98D00E2503F /* SettingsView.swift */; };
+		956D58392FC488A500E2503F /* NavigationCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 956D58382FC488A500E2503F /* NavigationCoordinator.swift */; };
+		956D583B2FC508A000E2503F /* AdsbdbService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 956D583A2FC508A000E2503F /* AdsbdbService.swift */; };
+		956D583D2FC63F2800E2503F /* AircraftSilhouetteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 956D583C2FC63F2800E2503F /* AircraftSilhouetteView.swift */; };
+		956D583F2FC6509600E2503F /* DebugWikipediaValidatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 956D583E2FC6509600E2503F /* DebugWikipediaValidatorView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		95692F2F2FC26B4600112CE6 /* SkyScope.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SkyScope.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		95692F3D2FC26CBB00112CE6 /* CLAUDE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CLAUDE.md; sourceTree = "<group>"; };
+		956D58102FC3A82100E2503F /* Aircraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Aircraft.swift; sourceTree = "<group>"; };
+		956D58112FC3A82E00E2503F /* Favorite.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Favorite.swift; sourceTree = "<group>"; };
+		956D58122FC3A85200E2503F /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
+		956D58142FC3A86B00E2503F /* LocationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationService.swift; sourceTree = "<group>"; };
+		956D58152FC3A88B00E2503F /* OpenSkyService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenSkyService.swift; sourceTree = "<group>"; };
+		956D58162FC3A8B600E2503F /* FlightAwareService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlightAwareService.swift; sourceTree = "<group>"; };
+		956D58172FC3A8CE00E2503F /* APIRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIRouter.swift; sourceTree = "<group>"; };
+		956D58192FC3A8E100E2503F /* AircraftDataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AircraftDataStore.swift; sourceTree = "<group>"; };
+		956D581A2FC3A8F300E2503F /* SkyScopeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkyScopeApp.swift; sourceTree = "<group>"; };
+		956D581C2FC3A8FC00E2503F /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		956D58202FC3A91D00E2503F /* AircraftAnnotation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AircraftAnnotation.swift; sourceTree = "<group>"; };
+		956D58212FC3A92F00E2503F /* AircraftDetailSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AircraftDetailSheet.swift; sourceTree = "<group>"; };
+		956D58222FC3A94500E2503F /* MapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
+		956D58232FC3A96100E2503F /* ListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListView.swift; sourceTree = "<group>"; };
+		956D58242FC3A97A00E2503F /* FavoritesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoritesView.swift; sourceTree = "<group>"; };
+		956D58252FC3A98D00E2503F /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		956D58272FC3A9AC00E2503F /* WhatsOverMeIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhatsOverMeIntent.swift; sourceTree = "<group>"; };
+		956D58372FC3B52E00E2503F /* SkyScope-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "SkyScope-Info.plist"; sourceTree = "<group>"; };
+		956D58382FC488A500E2503F /* NavigationCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationCoordinator.swift; sourceTree = "<group>"; };
+		956D583A2FC508A000E2503F /* AdsbdbService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdsbdbService.swift; sourceTree = "<group>"; };
+		956D583C2FC63F2800E2503F /* AircraftSilhouetteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AircraftSilhouetteView.swift; sourceTree = "<group>"; };
+		956D583E2FC6509600E2503F /* DebugWikipediaValidatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugWikipediaValidatorView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		95692F2C2FC26B4600112CE6 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		95692F262FC26B4600112CE6 = {
+			isa = PBXGroup;
+			children = (
+				956D58372FC3B52E00E2503F /* SkyScope-Info.plist */,
+				95692F3D2FC26CBB00112CE6 /* CLAUDE.md */,
+				95692F302FC26B4600112CE6 /* Products */,
+				956D580F2FC3A82100E2503F /* Models */,
+				956D58132FC3A86B00E2503F /* Services */,
+				956D58182FC3A8E100E2503F /* ViewModels */,
+				956D581A2FC3A8F300E2503F /* SkyScopeApp.swift */,
+				956D581C2FC3A8FC00E2503F /* ContentView.swift */,
+				956D581E2FC3A91000E2503F /* Views */,
+				956D58262FC3A9AC00E2503F /* Intents */,
+			);
+			sourceTree = "<group>";
+		};
+		95692F302FC26B4600112CE6 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				95692F2F2FC26B4600112CE6 /* SkyScope.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		956D580F2FC3A82100E2503F /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				956D58102FC3A82100E2503F /* Aircraft.swift */,
+				956D58112FC3A82E00E2503F /* Favorite.swift */,
+				956D58122FC3A85200E2503F /* AppSettings.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		956D58132FC3A86B00E2503F /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				956D583A2FC508A000E2503F /* AdsbdbService.swift */,
+				956D58142FC3A86B00E2503F /* LocationService.swift */,
+				956D58152FC3A88B00E2503F /* OpenSkyService.swift */,
+				956D58162FC3A8B600E2503F /* FlightAwareService.swift */,
+				956D58172FC3A8CE00E2503F /* APIRouter.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		956D58182FC3A8E100E2503F /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				956D58192FC3A8E100E2503F /* AircraftDataStore.swift */,
+				956D58382FC488A500E2503F /* NavigationCoordinator.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		956D581E2FC3A91000E2503F /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				956D583E2FC6509600E2503F /* DebugWikipediaValidatorView.swift */,
+				956D581F2FC3A91600E2503F /* Components */,
+				956D58222FC3A94500E2503F /* MapView.swift */,
+				956D58232FC3A96100E2503F /* ListView.swift */,
+				956D58242FC3A97A00E2503F /* FavoritesView.swift */,
+				956D58252FC3A98D00E2503F /* SettingsView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		956D581F2FC3A91600E2503F /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				956D583C2FC63F2800E2503F /* AircraftSilhouetteView.swift */,
+				956D58202FC3A91D00E2503F /* AircraftAnnotation.swift */,
+				956D58212FC3A92F00E2503F /* AircraftDetailSheet.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		956D58262FC3A9AC00E2503F /* Intents */ = {
+			isa = PBXGroup;
+			children = (
+				956D58272FC3A9AC00E2503F /* WhatsOverMeIntent.swift */,
+			);
+			path = Intents;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		95692F2E2FC26B4600112CE6 /* SkyScope */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 95692F3A2FC26B4700112CE6 /* Build configuration list for PBXNativeTarget "SkyScope" */;
+			buildPhases = (
+				95692F2B2FC26B4600112CE6 /* Sources */,
+				95692F2C2FC26B4600112CE6 /* Frameworks */,
+				95692F2D2FC26B4600112CE6 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SkyScope;
+			packageProductDependencies = (
+			);
+			productName = SkyScope;
+			productReference = 95692F2F2FC26B4600112CE6 /* SkyScope.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		95692F272FC26B4600112CE6 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2650;
+				LastUpgradeCheck = 2650;
+				TargetAttributes = {
+					95692F2E2FC26B4600112CE6 = {
+						CreatedOnToolsVersion = 26.5;
+					};
+				};
+			};
+			buildConfigurationList = 95692F2A2FC26B4600112CE6 /* Build configuration list for PBXProject "SkyScope" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 95692F262FC26B4600112CE6;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 95692F302FC26B4600112CE6 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				95692F2E2FC26B4600112CE6 /* SkyScope */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		95692F2D2FC26B4600112CE6 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				95692F3E2FC26CBB00112CE6 /* CLAUDE.md in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		95692F2B2FC26B4600112CE6 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				956D581D2FC3A8FC00E2503F /* ContentView.swift in Sources */,
+				956D581B2FC3A8F300E2503F /* SkyScopeApp.swift in Sources */,
+				956D58282FC3AED100E2503F /* ListView.swift in Sources */,
+				956D583F2FC6509600E2503F /* DebugWikipediaValidatorView.swift in Sources */,
+				956D58292FC3AED100E2503F /* FlightAwareService.swift in Sources */,
+				956D58392FC488A500E2503F /* NavigationCoordinator.swift in Sources */,
+				956D582A2FC3AED100E2503F /* MapView.swift in Sources */,
+				956D582B2FC3AED100E2503F /* AircraftAnnotation.swift in Sources */,
+				956D582C2FC3AED100E2503F /* Aircraft.swift in Sources */,
+				956D583D2FC63F2800E2503F /* AircraftSilhouetteView.swift in Sources */,
+				956D582D2FC3AED100E2503F /* AppSettings.swift in Sources */,
+				956D582E2FC3AED100E2503F /* AircraftDetailSheet.swift in Sources */,
+				956D582F2FC3AED100E2503F /* FavoritesView.swift in Sources */,
+				956D58302FC3AED100E2503F /* AircraftDataStore.swift in Sources */,
+				956D58312FC3AED100E2503F /* LocationService.swift in Sources */,
+				956D58322FC3AED100E2503F /* WhatsOverMeIntent.swift in Sources */,
+				956D58332FC3AED100E2503F /* Favorite.swift in Sources */,
+				956D58342FC3AED100E2503F /* OpenSkyService.swift in Sources */,
+				956D58352FC3AED100E2503F /* APIRouter.swift in Sources */,
+				956D58362FC3AED100E2503F /* SettingsView.swift in Sources */,
+				956D583B2FC508A000E2503F /* AdsbdbService.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		95692F382FC26B4700112CE6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		95692F392FC26B4700112CE6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		95692F3B2FC26B4700112CE6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 9XW69X88LP;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "SkyScope-Info.plist";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "kyScope uses your location to find aircraft nearby — including while the screen is locked, so Live Activities can keep updating.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "SkyScope uses your location to find aircraft flying near you.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = DK.SkyScope;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		95692F3C2FC26B4700112CE6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 9XW69X88LP;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "SkyScope-Info.plist";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "kyScope uses your location to find aircraft nearby — including while the screen is locked, so Live Activities can keep updating.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "SkyScope uses your location to find aircraft flying near you.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = DK.SkyScope;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		95692F2A2FC26B4600112CE6 /* Build configuration list for PBXProject "SkyScope" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				95692F382FC26B4700112CE6 /* Debug */,
+				95692F392FC26B4700112CE6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		95692F3A2FC26B4700112CE6 /* Build configuration list for PBXNativeTarget "SkyScope" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				95692F3B2FC26B4700112CE6 /* Debug */,
+				95692F3C2FC26B4700112CE6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 95692F272FC26B4600112CE6 /* Project object */;
+}
