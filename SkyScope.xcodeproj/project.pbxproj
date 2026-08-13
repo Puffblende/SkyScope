@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3C10F924338CD75CE93EBF4D /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 16B728161DF293C8C30AB7C8 /* GoogleService-Info.plist */; };
+		9520359D3028CA72007394C2 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = 9520359C3028CA72007394C2 /* FirebaseMessaging */; };
 		95692F3E2FC26CBB00112CE6 /* CLAUDE.md in Resources */ = {isa = PBXBuildFile; fileRef = 95692F3D2FC26CBB00112CE6 /* CLAUDE.md */; };
 		956D581B2FC3A8F300E2503F /* SkyScopeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 956D581A2FC3A8F300E2503F /* SkyScopeApp.swift */; };
 		956D581D2FC3A8FC00E2503F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 956D581C2FC3A8FC00E2503F /* ContentView.swift */; };
@@ -29,9 +31,51 @@
 		956D583B2FC508A000E2503F /* AdsbdbService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 956D583A2FC508A000E2503F /* AdsbdbService.swift */; };
 		956D583D2FC63F2800E2503F /* AircraftSilhouetteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 956D583C2FC63F2800E2503F /* AircraftSilhouetteView.swift */; };
 		956D583F2FC6509600E2503F /* DebugWikipediaValidatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 956D583E2FC6509600E2503F /* DebugWikipediaValidatorView.swift */; };
+		95A084262FC8FBE7003034F6 /* LiveActivityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95A084252FC8FBE7003034F6 /* LiveActivityManager.swift */; };
+		95B0EABA302A76DD002EBF33 /* FollowStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95B0EAB9302A76DD002EBF33 /* FollowStore.swift */; };
+		95B0EABC302A7E3C002EBF33 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95B0EABB302A7E3B002EBF33 /* OnboardingView.swift */; };
+		95B0EABE302A7E50002EBF33 /* HelpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95B0EABD302A7E50002EBF33 /* HelpView.swift */; };
+		95B0EAC0302A7E6A002EBF33 /* FeedbackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95B0EABF302A7E6A002EBF33 /* FeedbackView.swift */; };
+		95B0EAC2302D2977002EBF33 /* AirplanesLiveService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95B0EAC1302D2977002EBF33 /* AirplanesLiveService.swift */; };
+		95B0EAC4302D2E77002EBF33 /* AircraftPhotoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95B0EAC3302D2E77002EBF33 /* AircraftPhotoView.swift */; };
+		95B452FC2FD609550059921E /* AirportCoordinatesService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95B452FB2FD609520059921E /* AirportCoordinatesService.swift */; };
+		95FB72222FC799DA00FA9D48 /* SkyScopeActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95FB72202FC799DA00FA9D48 /* SkyScopeActivityAttributes.swift */; };
+		95FB72622FC8679900FA9D48 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 95FB722A2FC7A0F600FA9D48 /* WidgetKit.framework */; };
+		95FB72632FC8679900FA9D48 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 95FB722C2FC7A0F600FA9D48 /* SwiftUI.framework */; };
+		95FB72742FC8679A00FA9D48 /* SkyScope WidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 95FB72612FC8679900FA9D48 /* SkyScope WidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		95FB72792FC8696B00FA9D48 /* SkyScopeActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95FB72202FC799DA00FA9D48 /* SkyScopeActivityAttributes.swift */; };
+		A1C6A2348BB96A1F12F80170 /* FirebaseInstallations in Frameworks */ = {isa = PBXBuildFile; productRef = EAAF28621F0086BBAD47A814 /* FirebaseInstallations */; };
+		AAC18553E2C74252BA819A5F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 503153570229F54343451459 /* AppDelegate.swift */; };
+		C7EA84A55D3674B2AEAF1CA2 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 906DC6CBCA03D2B862355335 /* FirebaseCore */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		95FB72722FC8679A00FA9D48 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 95692F272FC26B4600112CE6 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 95FB72602FC8679900FA9D48;
+			remoteInfo = "SkyScope WidgetExtension";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		95FB72432FC7A0F800FA9D48 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				95FB72742FC8679A00FA9D48 /* SkyScope WidgetExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		16B728161DF293C8C30AB7C8 /* GoogleService-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		503153570229F54343451459 /* AppDelegate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		95692F2F2FC26B4600112CE6 /* SkyScope.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SkyScope.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		95692F3D2FC26CBB00112CE6 /* CLAUDE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CLAUDE.md; sourceTree = "<group>"; };
 		956D58102FC3A82100E2503F /* Aircraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Aircraft.swift; sourceTree = "<group>"; };
@@ -56,13 +100,60 @@
 		956D583A2FC508A000E2503F /* AdsbdbService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdsbdbService.swift; sourceTree = "<group>"; };
 		956D583C2FC63F2800E2503F /* AircraftSilhouetteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AircraftSilhouetteView.swift; sourceTree = "<group>"; };
 		956D583E2FC6509600E2503F /* DebugWikipediaValidatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugWikipediaValidatorView.swift; sourceTree = "<group>"; };
+		95A084252FC8FBE7003034F6 /* LiveActivityManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveActivityManager.swift; sourceTree = "<group>"; };
+		95B0EAB9302A76DD002EBF33 /* FollowStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FollowStore.swift; sourceTree = "<group>"; };
+		95B0EABB302A7E3B002EBF33 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		95B0EABD302A7E50002EBF33 /* HelpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelpView.swift; sourceTree = "<group>"; };
+		95B0EABF302A7E6A002EBF33 /* FeedbackView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedbackView.swift; sourceTree = "<group>"; };
+		95B0EAC1302D2977002EBF33 /* AirplanesLiveService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirplanesLiveService.swift; sourceTree = "<group>"; };
+		95B0EAC3302D2E77002EBF33 /* AircraftPhotoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AircraftPhotoView.swift; sourceTree = "<group>"; };
+		95B452FB2FD609520059921E /* AirportCoordinatesService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirportCoordinatesService.swift; sourceTree = "<group>"; };
+		95FB72202FC799DA00FA9D48 /* SkyScopeActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkyScopeActivityAttributes.swift; sourceTree = "<group>"; };
+		95FB72232FC79CBC00FA9D48 /* SkyScope.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SkyScope.entitlements; sourceTree = "<group>"; };
+		95FB722A2FC7A0F600FA9D48 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		95FB722C2FC7A0F600FA9D48 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		95FB725B2FC7A31300FA9D48 /* SkyScope WidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "SkyScope WidgetExtension.entitlements"; sourceTree = "<group>"; };
+		95FB72612FC8679900FA9D48 /* SkyScope WidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "SkyScope WidgetExtension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		95FB72752FC8679A00FA9D48 /* Exceptions for "SkyScope Widget" folder in "SkyScope WidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 95FB72602FC8679900FA9D48 /* SkyScope WidgetExtension */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		95FB72642FC8679900FA9D48 /* SkyScope Widget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				95FB72752FC8679A00FA9D48 /* Exceptions for "SkyScope Widget" folder in "SkyScope WidgetExtension" target */,
+			);
+			path = "SkyScope Widget";
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		95692F2C2FC26B4600112CE6 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9520359D3028CA72007394C2 /* FirebaseMessaging in Frameworks */,
+				C7EA84A55D3674B2AEAF1CA2 /* FirebaseCore in Frameworks */,
+				A1C6A2348BB96A1F12F80170 /* FirebaseInstallations in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		95FB725E2FC8679900FA9D48 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				95FB72632FC8679900FA9D48 /* SwiftUI.framework in Frameworks */,
+				95FB72622FC8679900FA9D48 /* WidgetKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -72,16 +163,25 @@
 		95692F262FC26B4600112CE6 = {
 			isa = PBXGroup;
 			children = (
+				95B452FB2FD609520059921E /* AirportCoordinatesService.swift */,
+				95A084252FC8FBE7003034F6 /* LiveActivityManager.swift */,
+				95FB725B2FC7A31300FA9D48 /* SkyScope WidgetExtension.entitlements */,
+				95FB72232FC79CBC00FA9D48 /* SkyScope.entitlements */,
 				956D58372FC3B52E00E2503F /* SkyScope-Info.plist */,
 				95692F3D2FC26CBB00112CE6 /* CLAUDE.md */,
+				95FB72642FC8679900FA9D48 /* SkyScope Widget */,
+				95FB72292FC7A0F600FA9D48 /* Frameworks */,
 				95692F302FC26B4600112CE6 /* Products */,
 				956D580F2FC3A82100E2503F /* Models */,
 				956D58132FC3A86B00E2503F /* Services */,
 				956D58182FC3A8E100E2503F /* ViewModels */,
-				956D581A2FC3A8F300E2503F /* SkyScopeApp.swift */,
 				956D581C2FC3A8FC00E2503F /* ContentView.swift */,
 				956D581E2FC3A91000E2503F /* Views */,
 				956D58262FC3A9AC00E2503F /* Intents */,
+				95FB72212FC799DA00FA9D48 /* LiveActivity */,
+				16B728161DF293C8C30AB7C8 /* GoogleService-Info.plist */,
+				503153570229F54343451459 /* AppDelegate.swift */,
+				95B0EAAA302A7391002EBF33 /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -89,6 +189,7 @@
 			isa = PBXGroup;
 			children = (
 				95692F2F2FC26B4600112CE6 /* SkyScope.app */,
+				95FB72612FC8679900FA9D48 /* SkyScope WidgetExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -111,6 +212,7 @@
 				956D58152FC3A88B00E2503F /* OpenSkyService.swift */,
 				956D58162FC3A8B600E2503F /* FlightAwareService.swift */,
 				956D58172FC3A8CE00E2503F /* APIRouter.swift */,
+				95B0EAC1302D2977002EBF33 /* AirplanesLiveService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -120,6 +222,7 @@
 			children = (
 				956D58192FC3A8E100E2503F /* AircraftDataStore.swift */,
 				956D58382FC488A500E2503F /* NavigationCoordinator.swift */,
+				95B0EAB9302A76DD002EBF33 /* FollowStore.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -133,6 +236,9 @@
 				956D58232FC3A96100E2503F /* ListView.swift */,
 				956D58242FC3A97A00E2503F /* FavoritesView.swift */,
 				956D58252FC3A98D00E2503F /* SettingsView.swift */,
+				95B0EABB302A7E3B002EBF33 /* OnboardingView.swift */,
+				95B0EABD302A7E50002EBF33 /* HelpView.swift */,
+				95B0EABF302A7E6A002EBF33 /* FeedbackView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -143,6 +249,7 @@
 				956D583C2FC63F2800E2503F /* AircraftSilhouetteView.swift */,
 				956D58202FC3A91D00E2503F /* AircraftAnnotation.swift */,
 				956D58212FC3A92F00E2503F /* AircraftDetailSheet.swift */,
+				95B0EAC3302D2E77002EBF33 /* AircraftPhotoView.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -155,6 +262,31 @@
 			path = Intents;
 			sourceTree = "<group>";
 		};
+		95B0EAAA302A7391002EBF33 /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				956D581A2FC3A8F300E2503F /* SkyScopeApp.swift */,
+			);
+			name = "Recovered References";
+			sourceTree = "<group>";
+		};
+		95FB72212FC799DA00FA9D48 /* LiveActivity */ = {
+			isa = PBXGroup;
+			children = (
+				95FB72202FC799DA00FA9D48 /* SkyScopeActivityAttributes.swift */,
+			);
+			path = LiveActivity;
+			sourceTree = "<group>";
+		};
+		95FB72292FC7A0F600FA9D48 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				95FB722A2FC7A0F600FA9D48 /* WidgetKit.framework */,
+				95FB722C2FC7A0F600FA9D48 /* SwiftUI.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -165,17 +297,42 @@
 				95692F2B2FC26B4600112CE6 /* Sources */,
 				95692F2C2FC26B4600112CE6 /* Frameworks */,
 				95692F2D2FC26B4600112CE6 /* Resources */,
+				95FB72432FC7A0F800FA9D48 /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				95FB72732FC8679A00FA9D48 /* PBXTargetDependency */,
+			);
+			name = SkyScope;
+			packageProductDependencies = (
+				9520359C3028CA72007394C2 /* FirebaseMessaging */,
+				906DC6CBCA03D2B862355335 /* FirebaseCore */,
+				EAAF28621F0086BBAD47A814 /* FirebaseInstallations */,
+			);
+			productName = SkyScope;
+			productReference = 95692F2F2FC26B4600112CE6 /* SkyScope.app */;
+			productType = "com.apple.product-type.application";
+		};
+		95FB72602FC8679900FA9D48 /* SkyScope WidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 95FB72762FC8679A00FA9D48 /* Build configuration list for PBXNativeTarget "SkyScope WidgetExtension" */;
+			buildPhases = (
+				95FB725D2FC8679900FA9D48 /* Sources */,
+				95FB725E2FC8679900FA9D48 /* Frameworks */,
+				95FB725F2FC8679900FA9D48 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
-			name = SkyScope;
-			packageProductDependencies = (
+			fileSystemSynchronizedGroups = (
+				95FB72642FC8679900FA9D48 /* SkyScope Widget */,
 			);
-			productName = SkyScope;
-			productReference = 95692F2F2FC26B4600112CE6 /* SkyScope.app */;
-			productType = "com.apple.product-type.application";
+			name = "SkyScope WidgetExtension";
+			productName = "SkyScope WidgetExtension";
+			productReference = 95FB72612FC8679900FA9D48 /* SkyScope WidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -190,6 +347,9 @@
 					95692F2E2FC26B4600112CE6 = {
 						CreatedOnToolsVersion = 26.5;
 					};
+					95FB72602FC8679900FA9D48 = {
+						CreatedOnToolsVersion = 26.5;
+					};
 				};
 			};
 			buildConfigurationList = 95692F2A2FC26B4600112CE6 /* Build configuration list for PBXProject "SkyScope" */;
@@ -201,12 +361,16 @@
 			);
 			mainGroup = 95692F262FC26B4600112CE6;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				9520359B3028CA72007394C2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 95692F302FC26B4600112CE6 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				95692F2E2FC26B4600112CE6 /* SkyScope */,
+				95FB72602FC8679900FA9D48 /* SkyScope WidgetExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -217,6 +381,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				95692F3E2FC26CBB00112CE6 /* CLAUDE.md in Resources */,
+				3C10F924338CD75CE93EBF4D /* GoogleService-Info.plist in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		95FB725F2FC8679900FA9D48 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -229,18 +401,27 @@
 			files = (
 				956D581D2FC3A8FC00E2503F /* ContentView.swift in Sources */,
 				956D581B2FC3A8F300E2503F /* SkyScopeApp.swift in Sources */,
+				95A084262FC8FBE7003034F6 /* LiveActivityManager.swift in Sources */,
+				95B0EABC302A7E3C002EBF33 /* OnboardingView.swift in Sources */,
+				95FB72222FC799DA00FA9D48 /* SkyScopeActivityAttributes.swift in Sources */,
+				95B0EABE302A7E50002EBF33 /* HelpView.swift in Sources */,
 				956D58282FC3AED100E2503F /* ListView.swift in Sources */,
 				956D583F2FC6509600E2503F /* DebugWikipediaValidatorView.swift in Sources */,
 				956D58292FC3AED100E2503F /* FlightAwareService.swift in Sources */,
 				956D58392FC488A500E2503F /* NavigationCoordinator.swift in Sources */,
 				956D582A2FC3AED100E2503F /* MapView.swift in Sources */,
+				95B0EAC2302D2977002EBF33 /* AirplanesLiveService.swift in Sources */,
 				956D582B2FC3AED100E2503F /* AircraftAnnotation.swift in Sources */,
+				95B0EAC0302A7E6A002EBF33 /* FeedbackView.swift in Sources */,
 				956D582C2FC3AED100E2503F /* Aircraft.swift in Sources */,
 				956D583D2FC63F2800E2503F /* AircraftSilhouetteView.swift in Sources */,
 				956D582D2FC3AED100E2503F /* AppSettings.swift in Sources */,
 				956D582E2FC3AED100E2503F /* AircraftDetailSheet.swift in Sources */,
 				956D582F2FC3AED100E2503F /* FavoritesView.swift in Sources */,
+				95B0EAC4302D2E77002EBF33 /* AircraftPhotoView.swift in Sources */,
+				95B452FC2FD609550059921E /* AirportCoordinatesService.swift in Sources */,
 				956D58302FC3AED100E2503F /* AircraftDataStore.swift in Sources */,
+				95B0EABA302A76DD002EBF33 /* FollowStore.swift in Sources */,
 				956D58312FC3AED100E2503F /* LocationService.swift in Sources */,
 				956D58322FC3AED100E2503F /* WhatsOverMeIntent.swift in Sources */,
 				956D58332FC3AED100E2503F /* Favorite.swift in Sources */,
@@ -248,10 +429,27 @@
 				956D58352FC3AED100E2503F /* APIRouter.swift in Sources */,
 				956D58362FC3AED100E2503F /* SettingsView.swift in Sources */,
 				956D583B2FC508A000E2503F /* AdsbdbService.swift in Sources */,
+				AAC18553E2C74252BA819A5F /* AppDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		95FB725D2FC8679900FA9D48 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				95FB72792FC8696B00FA9D48 /* SkyScopeActivityAttributes.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		95FB72732FC8679A00FA9D48 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 95FB72602FC8679900FA9D48 /* SkyScope WidgetExtension */;
+			targetProxy = 95FB72722FC8679A00FA9D48 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		95692F382FC26B4700112CE6 /* Debug */ = {
@@ -378,6 +576,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = SkyScope.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -387,6 +586,7 @@
 				INFOPLIST_FILE = "SkyScope-Info.plist";
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "kyScope uses your location to find aircraft nearby — including while the screen is locked, so Live Activities can keep updating.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "SkyScope uses your location to find aircraft flying near you.";
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -415,6 +615,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = SkyScope.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -424,6 +625,7 @@
 				INFOPLIST_FILE = "SkyScope-Info.plist";
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "kyScope uses your location to find aircraft nearby — including while the screen is locked, so Live Activities can keep updating.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "SkyScope uses your location to find aircraft flying near you.";
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -440,6 +642,70 @@
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		95FB72772FC8679A00FA9D48 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = "SkyScope WidgetExtension.entitlements";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 9XW69X88LP;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "SkyScope Widget/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "SkyScope Widget";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "DK.SkyScope.SkyScope-Widget";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		95FB72782FC8679A00FA9D48 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = "SkyScope WidgetExtension.entitlements";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 9XW69X88LP;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "SkyScope Widget/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "SkyScope Widget";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "DK.SkyScope.SkyScope-Widget";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
@@ -468,7 +734,45 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		95FB72762FC8679A00FA9D48 /* Build configuration list for PBXNativeTarget "SkyScope WidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				95FB72772FC8679A00FA9D48 /* Debug */,
+				95FB72782FC8679A00FA9D48 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		9520359B3028CA72007394C2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.17.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		906DC6CBCA03D2B862355335 /* FirebaseCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9520359B3028CA72007394C2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCore;
+		};
+		9520359C3028CA72007394C2 /* FirebaseMessaging */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9520359B3028CA72007394C2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseMessaging;
+		};
+		EAAF28621F0086BBAD47A814 /* FirebaseInstallations */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9520359B3028CA72007394C2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseInstallations;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 95692F272FC26B4600112CE6 /* Project object */;
 }

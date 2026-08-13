@@ -18,7 +18,7 @@ enum AircraftDataError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .missingAPIKey:
-            return "FlightAware API key missing. Add it in Settings."
+            return "API key missing."
         case .invalidURL:
             return "Failed to construct API URL."
         case .invalidResponse:
@@ -26,14 +26,16 @@ enum AircraftDataError: LocalizedError {
         case .httpStatus(let code):
             return "API returned HTTP \(code)."
         case .allProvidersFailed:
-            return "No data sources are available."
+            return "No data sources available — check your connection."
         }
     }
 }
 
-/// Routes aircraft requests to the configured primary provider (FlightAware) and falls back
-/// to OpenSky if the primary fails (e.g. exhausted free credits, missing key, network error).
-/// Lives at the app level so views just talk to one thing.
+/// Routes aircraft position requests to the appropriate provider.
+///
+/// - Primary:   airplanes.live (free community ADS-B, no key required)
+/// - Secondary: adsb.lol      (identical JSON format, independent community feed)
+/// - Fallback:  OpenSky Network (free, optional credentials for higher rate limits)
 @MainActor
 @Observable
 final class APIRouter {
@@ -47,40 +49,43 @@ final class APIRouter {
     }
 
     func fetch(near center: CLLocationCoordinate2D, radiusMeters: Double) async throws -> [Aircraft] {
-        var attemptedAtLeastOne = false
-
-        if settings.useFlightAware, !settings.flightAwareApiKey.isEmpty {
-            attemptedAtLeastOne = true
-            let provider = FlightAwareService(apiKey: settings.flightAwareApiKey)
-            do {
-                let result = try await provider.fetchAircraft(near: center, radiusMeters: radiusMeters)
-                lastUsedProvider = "FlightAware"
-                lastError = nil
-                return result
-            } catch {
-                lastError = "FlightAware: \(error.localizedDescription)"
-            }
+        // Primary: airplanes.live
+        do {
+            let result = try await AirplanesLiveService(baseURL: "https://api.airplanes.live/v2/point")
+                .fetchAircraft(near: center, radiusMeters: radiusMeters)
+            lastUsedProvider = "airplanes.live"
+            lastError = nil
+            return result
+        } catch {
+            print("[ROUTER] airplanes.live failed: \(error)")
         }
 
-        if settings.useOpenSkyFallback || !settings.useFlightAware {
-            attemptedAtLeastOne = true
-            let provider = OpenSkyService(
-                username: settings.openSkyUsername,
-                password: settings.openSkyPassword
-            )
-            do {
-                let result = try await provider.fetchAircraft(near: center, radiusMeters: radiusMeters)
-                lastUsedProvider = "OpenSky"
-                lastError = nil
-                return result
-            } catch {
-                lastError = "OpenSky: \(error.localizedDescription)"
-            }
+        // Secondary: adsb.lol — identical JSON format, independent community feed
+        do {
+            let result = try await AirplanesLiveService(baseURL: "https://api.adsb.lol/v2/point")
+                .fetchAircraft(near: center, radiusMeters: radiusMeters)
+            lastUsedProvider = "adsb.lol"
+            lastError = nil
+            return result
+        } catch {
+            print("[ROUTER] adsb.lol failed: \(error)")
         }
 
-        guard attemptedAtLeastOne else {
-            throw AircraftDataError.allProvidersFailed
+        // Fallback: OpenSky Network
+        let openSky = OpenSkyService(
+            username: settings.openSkyUsername.isEmpty ? nil : settings.openSkyUsername,
+            password: settings.openSkyPassword.isEmpty ? nil : settings.openSkyPassword
+        )
+        do {
+            let result = try await openSky.fetchAircraft(near: center, radiusMeters: radiusMeters)
+            lastUsedProvider = "OpenSky"
+            lastError = nil
+            return result
+        } catch {
+            print("[ROUTER] OpenSky failed: \(error)")
+            lastError = "OpenSky: \(error.localizedDescription)"
         }
+
         throw AircraftDataError.allProvidersFailed
     }
 }

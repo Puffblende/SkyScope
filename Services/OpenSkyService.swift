@@ -22,7 +22,6 @@ struct OpenSkyService: AircraftDataProvider {
     }
 
     func fetchAircraft(near center: CLLocationCoordinate2D, radiusMeters: Double) async throws -> [Aircraft] {
-        // OpenSky expects a lat/lon bounding box. Convert radius to a degree delta — good enough for short distances.
         let latDelta = radiusMeters / 111_000.0
         let lonDelta = radiusMeters / (111_000.0 * max(cos(center.latitude * .pi / 180), 0.0001))
 
@@ -55,15 +54,34 @@ struct OpenSkyService: AircraftDataProvider {
         let timestamp = Date(timeIntervalSince1970: TimeInterval(decoded.time))
         let states = decoded.states ?? []
 
-        var aircraftList: [Aircraft] = []
+        // Pre-filter to states inside the radius so we only enrich what we'll display.
+        let centerLocation = CLLocation(latitude: center.latitude, longitude: center.longitude)
+        var candidates: [(state: OpenSkyState, distance: CLLocationDistance)] = []
         for state in states {
             guard let lat = state.latitude, let lon = state.longitude else { continue }
-            let icao24 = state.icao24.trimmingCharacters(in: .whitespaces)
-            guard !icao24.isEmpty else { continue }
+            guard !state.icao24.trimmingCharacters(in: .whitespaces).isEmpty else { continue }
+            let distance = CLLocation(latitude: lat, longitude: lon).distance(from: centerLocation)
+            if distance <= radiusMeters {
+                candidates.append((state, distance))
+            }
+        }
 
-            let metadata = try await fetchMetadata(for: icao24)
+        // Fetch OpenSky metadata + ADSBDB aircraft info in parallel for every candidate.
+        let icao24List = candidates.map { $0.state.icao24.trimmingCharacters(in: .whitespaces) }
+        async let openSkyMeta = fetchAllMetadata(for: icao24List)
+        async let adsbdbMeta = fetchAllAdsbdbInfo(for: icao24List)
+        let (osResults, adsbResults) = await (openSkyMeta, adsbdbMeta)
+
+        var aircraftList: [Aircraft] = []
+        for (state, _) in candidates {
+            let icao24 = state.icao24.trimmingCharacters(in: .whitespaces)
+            let openSky = osResults[icao24] ?? nil
+            let adsb = adsbResults[icao24] ?? nil
+
             let callsign = state.callsign?.trimmingCharacters(in: .whitespaces)
-            let airline = extractAirlineFromCallsign(callsign) ?? metadata?.manufacturerName
+            let registration = openSky?.registration ?? adsb?.registration
+            let typeCode = openSky?.typecode ?? adsb?.typeCode
+            let airline = extractAirlineFromCallsign(callsign) ?? adsb?.operatorName ?? openSky?.manufacturerName
 
             let lastUpdate: Date
             if let lastContact = state.lastContact {
@@ -72,18 +90,21 @@ struct OpenSkyService: AircraftDataProvider {
                 lastUpdate = timestamp
             }
 
+            let altitudeMeters = state.baroAltitude ?? state.geoAltitude
+
             let ac = Aircraft(
                 id: icao24,
-                registration: metadata?.registration,
+                registration: registration,
                 callsign: callsign?.isEmpty == false ? callsign : nil,
                 airline: airline,
-                aircraftType: metadata?.typecode,
-                coordinate: CLLocationCoordinate2D(latitude: lat, longitude: lon),
-                altitudeMeters: state.baroAltitude ?? state.geoAltitude,
+                aircraftType: typeCode,
+                coordinate: CLLocationCoordinate2D(latitude: state.latitude ?? 0, longitude: state.longitude ?? 0),
+                altitudeMeters: altitudeMeters,
                 groundSpeedMps: state.velocity,
                 headingDegrees: state.trueTrack,
                 originAirport: nil,
                 destinationAirport: nil,
+                squawk: state.squawk,
                 onGround: state.onGround,
                 lastUpdate: lastUpdate
             )
@@ -92,6 +113,23 @@ struct OpenSkyService: AircraftDataProvider {
 
         await enrichWithRoutes(aircraftList: &aircraftList)
         return aircraftList
+    }
+
+    private func fetchAllAdsbdbInfo(for icao24List: [String]) async -> [String: AdsbdbService.AircraftInfo?] {
+        var results: [String: AdsbdbService.AircraftInfo?] = [:]
+        await withTaskGroup(of: (String, AdsbdbService.AircraftInfo?).self) { group in
+            for icao24 in icao24List {
+                guard !icao24.isEmpty else { continue }
+                group.addTask {
+                    let info = await self.adsbdbService.fetchAircraftInfo(icao24: icao24)
+                    return (icao24, info)
+                }
+            }
+            for await (icao24, info) in group {
+                results[icao24] = info
+            }
+        }
+        return results
     }
 
     private func enrichWithRoutes(aircraftList: inout [Aircraft]) async {
@@ -110,6 +148,26 @@ struct OpenSkyService: AircraftDataProvider {
                 }
             }
         }
+    }
+
+    private func fetchAllMetadata(for icao24List: [String]) async -> [String: OpenSkyAircraftMetadata?] {
+        var results: [String: OpenSkyAircraftMetadata?] = [:]
+
+        await withTaskGroup(of: (String, OpenSkyAircraftMetadata?).self) { group in
+            for icao24 in icao24List {
+                guard !icao24.isEmpty else { continue }
+                group.addTask {
+                    let metadata = try? await self.fetchMetadata(for: icao24)
+                    return (icao24, metadata)
+                }
+            }
+
+            for await (icao24, metadata) in group {
+                results[icao24] = metadata
+            }
+        }
+
+        return results
     }
 
     private func fetchMetadata(for icao24: String) async throws -> OpenSkyAircraftMetadata? {
@@ -188,12 +246,31 @@ struct OpenSkyService: AircraftDataProvider {
         "THA": "Thai Airways",
         "MAS": "Malaysia Airlines",
         "KAL": "Korean Air",
+        "TOM": "TUI Airways",
+        "EIN": "Aer Lingus",
+        "THY": "Turkish Airlines",
+        "QTR": "Qatar Airways",
+        "ETD": "Etihad Airways",
+        "DLV": "DHL Aviation",
+        "UPS": "UPS Airlines",
+        "FDX": "FedEx Express",
+        "SAS": "Scandinavian Airlines",
+        "FIN": "Finnair",
+        "AUA": "Austrian Airlines",
+        "BEL": "Brussels Airlines",
+        "VLG": "Vueling",
+        "NAX": "Norwegian Air",
+        "WUK": "Wizz Air UK",
+        "EXS": "Jet2",
+        "TCX": "TUI Airways",
+        "MON": "Monarch Airlines",
+        "TFL": "Arkefly",
+        "SWN": "West Air Sweden",
     ]
 }
 
 // MARK: - Wire format
 
-/// OpenSky returns `states` as a JSON array of mixed-type arrays. We decode each row manually.
 private struct OpenSkyResponse: Decodable {
     let time: Int
     let states: [OpenSkyState]?
@@ -235,25 +312,42 @@ private struct OpenSkyState: Decodable {
     let velocity: Double?
     let trueTrack: Double?
     let verticalRate: Double?
+    let squawk: String?
     let geoAltitude: Double?
 
     init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
+        // Index 0: icao24
         self.icao24 = try container.decode(String.self)
+        // Index 1: callsign
         self.callsign = try? container.decode(String?.self)
+        // Index 2: origin country
         self.originCountry = (try? container.decode(String.self)) ?? ""
+        // Index 3: time position
         self.timePosition = try? container.decode(Int?.self)
+        // Index 4: last contact
         self.lastContact = try? container.decode(Int?.self)
+        // Index 5: longitude
         self.longitude = try? container.decode(Double?.self)
+        // Index 6: latitude
         self.latitude = try? container.decode(Double?.self)
+        // Index 7: baro altitude (meters)
         self.baroAltitude = try? container.decode(Double?.self)
+        // Index 8: on ground
         self.onGround = (try? container.decode(Bool.self)) ?? false
+        // Index 9: velocity (m/s)
         self.velocity = try? container.decode(Double?.self)
+        // Index 10: true track
         self.trueTrack = try? container.decode(Double?.self)
+        // Index 11: vertical rate
         self.verticalRate = try? container.decode(Double?.self)
-        // Skip sensors (index 12) and squawk (index 14) etc.
-        _ = try? container.decode([Int]?.self) // sensors
+        // Index 12: sensors (skip)
+        _ = try? container.decode(AnyDecodable.self)
+        // Index 13: geo altitude (meters)
         self.geoAltitude = try? container.decode(Double?.self)
+        // Index 14: squawk (String)
+        let rawSquawk = try? container.decode(String?.self)
+        self.squawk = rawSquawk?.isEmpty == false ? rawSquawk : nil
     }
 }
 

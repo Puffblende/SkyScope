@@ -396,6 +396,7 @@ enum AircraftWikipediaMapper {
         "B06": ("Bell 206 JetRanger", "Bell_206"),
         "B407": ("Bell 407", "Bell_407"),
         "B429": ("Bell 429", "Bell_429_GlobalRanger"),
+        "H47": ("Mil Mi-17", "Mil_Mi-17"),
     ]
 
     static func articleTitle(for typecode: String) -> String {

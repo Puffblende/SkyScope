@@ -149,9 +149,6 @@ final class SettingsStore {
         static let speedUnit = "settings.speed.unit"
         static let refreshInterval = "settings.refresh.interval"
         static let liveActivityOnLaunch = "settings.liveActivity.launchOnStartup"
-        static let useFlightAware = "settings.api.useFlightAware"
-        static let useOpenSkyFallback = "settings.api.useOpenSkyFallback"
-        static let flightAwareApiKey = "settings.api.flightAwareKey"
         static let openSkyUsername = "settings.api.openSkyUsername"
         static let openSkyPassword = "settings.api.openSkyPassword"
         static let colorScheme = "settings.appearance.colorScheme"
@@ -184,18 +181,6 @@ final class SettingsStore {
         didSet { defaults.set(launchLiveActivityOnStartup, forKey: Keys.liveActivityOnLaunch) }
     }
 
-    var useFlightAware: Bool {
-        didSet { defaults.set(useFlightAware, forKey: Keys.useFlightAware) }
-    }
-
-    var useOpenSkyFallback: Bool {
-        didSet { defaults.set(useOpenSkyFallback, forKey: Keys.useOpenSkyFallback) }
-    }
-
-    var flightAwareApiKey: String {
-        didSet { defaults.set(flightAwareApiKey, forKey: Keys.flightAwareApiKey) }
-    }
-
     var openSkyUsername: String {
         didSet { defaults.set(openSkyUsername, forKey: Keys.openSkyUsername) }
     }
@@ -221,9 +206,6 @@ final class SettingsStore {
         self.speedUnit = SpeedUnit(rawValue: defaults.string(forKey: Keys.speedUnit) ?? "") ?? .knots
         self.refreshInterval = RefreshInterval(rawValue: defaults.integer(forKey: Keys.refreshInterval)) ?? .twoMinutes
         self.launchLiveActivityOnStartup = (defaults.object(forKey: Keys.liveActivityOnLaunch) as? Bool) ?? true
-        self.useFlightAware = (defaults.object(forKey: Keys.useFlightAware) as? Bool) ?? true
-        self.useOpenSkyFallback = (defaults.object(forKey: Keys.useOpenSkyFallback) as? Bool) ?? true
-        self.flightAwareApiKey = defaults.string(forKey: Keys.flightAwareApiKey) ?? ""
         self.openSkyUsername = defaults.string(forKey: Keys.openSkyUsername) ?? ""
         self.openSkyPassword = defaults.string(forKey: Keys.openSkyPassword) ?? ""
         self.colorScheme = AppColorScheme(rawValue: defaults.string(forKey: Keys.colorScheme) ?? "") ?? .system

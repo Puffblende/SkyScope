@@ -1,0 +1,7 @@
+# Firebase secrets — never commit
+GoogleService-Info.plist
+
+# Xcode
+xcuserdata/
+*.xcuserstate
+DerivedData/

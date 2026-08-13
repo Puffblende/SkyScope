@@ -38,6 +38,9 @@ struct Aircraft: Identifiable, Hashable, Sendable {
     /// Destination airport ICAO/IATA code.
     var destinationAirport: String?
 
+    /// Transponder/squawk code, e.g. "1234".
+    var squawk: String?
+
     /// True when the aircraft is reported as on-ground.
     var onGround: Bool
 

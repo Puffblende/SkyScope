@@ -12,13 +12,22 @@ struct AircraftDetailSheet: View {
 
     @Environment(SettingsStore.self) private var settings
     @Environment(NavigationCoordinator.self) private var navigation
+    @Environment(FollowStore.self) private var follow
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @Query private var favorites: [Favorite]
 
+    @State private var showSilhouette = false
+    @State private var showPhoto = false
+    @State private var showFollowInfo = false
+
     private var isFavorite: Bool {
         guard let reg = aircraft.registration?.uppercased() else { return false }
         return favorites.contains { $0.registration == reg }
+    }
+
+    private var isFollowing: Bool {
+        follow.isFollowing(aircraft)
     }
 
     var body: some View {
@@ -38,7 +47,52 @@ struct AircraftDetailSheet: View {
                             }
                         }
                         Spacer()
+                        if aircraft.registration != nil {
+                            Button {
+                                toggleFavorite()
+                            } label: {
+                                Image(systemName: isFavorite ? "star.fill" : "star")
+                                    .font(.title2)
+                                    .foregroundStyle(isFavorite ? .yellow : .secondary)
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel(isFavorite ? "Remove from favorites" : "Add to favorites")
+                        }
                     }
+                }
+
+                // Follow toggle — pins the Live Activity to this aircraft until it leaves the radius.
+                Section {
+                    HStack {
+                        Button {
+                            follow.toggle(aircraft)
+                        } label: {
+                            Label(
+                                isFollowing ? "Following" : "Follow",
+                                systemImage: isFollowing ? "location.fill" : "location"
+                            )
+                            .foregroundStyle(isFollowing ? Color.accentColor : .primary)
+                        }
+                        Spacer()
+                        if isFollowing {
+                            Text("Live Activity pinned")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        Button {
+                            showFollowInfo = true
+                        } label: {
+                            Image(systemName: "info.circle")
+                                .foregroundStyle(.secondary)
+                        }
+                        .popover(isPresented: $showFollowInfo, arrowEdge: .trailing) {
+                            Text("Follow locks the Live Activity to this aircraft until it leaves your search radius. Priority order: Follow › Favorite › Nearest.")
+                                .font(.callout)
+                                .padding()
+                                .presentationCompactAdaptation(.popover)
+                        }
+                    }
+                    .buttonStyle(.borderless)
                 }
 
                 // Show-on-Map action — only valuable when this sheet was opened from somewhere other than the map.
@@ -80,25 +134,56 @@ struct AircraftDetailSheet: View {
                 }
 
                 Section("Aircraft") {
-                    detailRow(label: "Type", value: aircraft.aircraftType ?? "—")
-                    detailRow(label: "Registration", value: aircraft.registration ?? "—")
+                    if let aircraftType = aircraft.aircraftType {
+                        Button {
+                            showSilhouette = true
+                        } label: {
+                            HStack {
+                                Text("Type").foregroundStyle(.secondary)
+                                Spacer()
+                                HStack(spacing: 4) {
+                                    Text(aircraftType).font(.body.monospacedDigit())
+                                    Image(systemName: "chevron.right")
+                                        .font(.caption2)
+                                }
+                                .foregroundStyle(.tint)
+                            }
+                        }
+                    } else {
+                        detailRow(label: "Type", value: "—")
+                    }
+                    if let reg = aircraft.registration {
+                        Button {
+                            showPhoto = true
+                        } label: {
+                            HStack {
+                                Text("Registration").foregroundStyle(.secondary)
+                                Spacer()
+                                HStack(spacing: 4) {
+                                    Text(reg).font(.body.monospacedDigit())
+                                    Image(systemName: "chevron.right").font(.caption2)
+                                }
+                                .foregroundStyle(.tint)
+                            }
+                        }
+                    } else {
+                        detailRow(label: "Registration", value: "—")
+                    }
                     detailRow(label: "ICAO24", value: aircraft.id)
                     detailRow(label: "Status", value: aircraft.onGround ? "On Ground" : "Airborne")
                 }
             }
-            .navigationTitle(aircraft.displayName)
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    if aircraft.registration != nil {
-                        Button {
-                            toggleFavorite()
-                        } label: {
-                            Image(systemName: isFavorite ? "star.fill" : "star")
-                                .foregroundStyle(isFavorite ? .yellow : .accentColor)
-                        }
-                        .accessibilityLabel(isFavorite ? "Remove from favorites" : "Add to favorites")
-                    }
+            .sheet(isPresented: $showSilhouette) {
+                AircraftSilhouetteView(aircraftType: aircraft.aircraftType)
+                    .presentationDetents([.medium, .large])
+                    .presentationDragIndicator(.visible)
+            }
+            .sheet(isPresented: $showPhoto) {
+                if let reg = aircraft.registration {
+                    AircraftPhotoView(registration: reg)
+                        .presentationDetents([.medium, .large])
+                        .presentationDragIndicator(.visible)
                 }
             }
         }

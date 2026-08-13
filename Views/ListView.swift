@@ -7,10 +7,11 @@ struct ListView: View {
     @Environment(SettingsStore.self) private var settings
     @Environment(LocationService.self) private var location
     @Environment(AircraftDataStore.self) private var dataStore
+    @Environment(FollowStore.self) private var follow
     @Query private var favorites: [Favorite]
 
     @State private var selectedAircraft: Aircraft?
-    @State private var silhouetteAircraft: Aircraft?
+    @State private var refreshToast: String? = nil
 
     private var favoriteRegistrations: Set<String> {
         Set(favorites.map { $0.registration })
@@ -18,30 +19,53 @@ struct ListView: View {
 
     var body: some View {
         NavigationStack {
-            Group {
-                if dataStore.aircraft.isEmpty {
+            List(dataStore.aircraft) { aircraft in
+                Button {
+                    selectedAircraft = aircraft
+                } label: {
+                    aircraftRow(aircraft)
+                }
+                .buttonStyle(.plain)
+            }
+            .listStyle(.plain)
+            // refreshable must be on the List directly — Group/overlay wrappers break it.
+            .refreshable {
+                await dataStore.refresh()
+                let count = dataStore.aircraft.count
+                if let error = dataStore.lastError {
+                    refreshToast = "Error: \(error)"
+                } else {
+                    refreshToast = count == 0
+                        ? "No aircraft in range"
+                        : "\(count) aircraft found"
+                }
+                try? await Task.sleep(nanoseconds: 2_500_000_000)
+                refreshToast = nil
+            }
+            .overlay {
+                if dataStore.aircraft.isEmpty && !dataStore.isLoading {
                     ContentUnavailableView {
                         Label("No aircraft", systemImage: "airplane.circle")
                     } description: {
                         Text("Pull to refresh or expand your search radius in Settings.")
                     }
-                } else {
-                    List(dataStore.aircraft) { aircraft in
-                        Button {
-                            selectedAircraft = aircraft
-                        } label: {
-                            aircraftRow(aircraft)
-                        }
-                        .buttonStyle(.plain)
-                    }
-                    .listStyle(.plain)
                 }
-            }
-            .refreshable {
-                await dataStore.refresh()
             }
             .navigationTitle("Aircraft Nearby")
             .navigationBarTitleDisplayMode(.large)
+            .overlay(alignment: .top) {
+                if let toast = refreshToast {
+                    Text(toast)
+                        .font(.caption)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 8)
+                        .background(dataStore.lastError != nil ? Color.red.opacity(0.85) : Color.secondary.opacity(0.85), in: .capsule)
+                        .foregroundStyle(.white)
+                        .padding(.top, 8)
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                        .animation(.easeInOut(duration: 0.3), value: refreshToast)
+                }
+            }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     if dataStore.isLoading {
@@ -57,37 +81,34 @@ struct ListView: View {
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
             }
-            .sheet(item: $silhouetteAircraft) { aircraft in
-                AircraftSilhouetteView(aircraftType: aircraft.aircraftType)
-                    .presentationDetents([.medium, .large])
-                    .presentationDragIndicator(.visible)
-            }
         }
     }
 
     @ViewBuilder
     private func aircraftRow(_ aircraft: Aircraft) -> some View {
         let isFavorite = aircraft.registration.map { favoriteRegistrations.contains($0.uppercased()) } ?? false
+        let isFollowed = follow.isFollowing(aircraft)
 
         HStack(alignment: .top, spacing: 12) {
-            Button {
-                silhouetteAircraft = aircraft
-            } label: {
-                Image(systemName: "airplane")
-                    .font(.title3)
-                    .foregroundStyle(isFavorite ? .yellow : .accentColor)
-                    .rotationEffect(.degrees((aircraft.headingDegrees ?? 0) - 90))
-                    .frame(width: 36, height: 36)
-                    .background(.thinMaterial, in: .circle)
-            }
-            .buttonStyle(.plain)
+            // Plane icon — colour reflects priority state
+            Image(systemName: "airplane")
+                .font(.title3)
+                .foregroundStyle(isFollowed ? .green : isFavorite ? .yellow : .accentColor)
+                .rotationEffect(.degrees((aircraft.headingDegrees ?? 0) - 90))
+                .frame(width: 36, height: 36)
+                .background(.thinMaterial, in: .circle)
+                .overlay(Circle().stroke(isFollowed ? Color.green : Color.clear, lineWidth: 2))
 
             VStack(alignment: .leading, spacing: 4) {
-                // Title row: callsign + favorite indicator
+                // Title row: callsign + badges
                 HStack(spacing: 6) {
                     Text(aircraft.displayName)
                         .font(.headline)
-                    if isFavorite {
+                    if isFollowed {
+                        Image(systemName: "location.fill")
+                            .foregroundStyle(.green)
+                            .font(.caption)
+                    } else if isFavorite {
                         Image(systemName: "star.fill")
                             .foregroundStyle(.yellow)
                             .font(.caption)
@@ -111,12 +132,7 @@ struct ListView: View {
                 // Metadata pills: type, registration
                 HStack(spacing: 6) {
                     if let type = aircraft.aircraftType {
-                        Button {
-                            silhouetteAircraft = aircraft
-                        } label: {
-                            metadataPill(text: type, icon: "airplane.circle")
-                        }
-                        .buttonStyle(.plain)
+                        metadataPill(text: type, icon: "airplane.circle")
                     }
                     if let reg = aircraft.registration {
                         metadataPill(text: reg, icon: nil)
@@ -136,14 +152,31 @@ struct ListView: View {
 
             Spacer(minLength: 4)
 
-            if let userCoord = location.currentLocation?.coordinate {
-                VStack(alignment: .trailing, spacing: 2) {
-                    Text(UnitFormat.distance(meters: aircraft.distance(to: userCoord), unit: settings.distanceUnit))
-                        .font(.subheadline.bold().monospacedDigit())
-                    Text("away")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
+            VStack(alignment: .trailing, spacing: 6) {
+                if let userCoord = location.currentLocation?.coordinate {
+                    VStack(alignment: .trailing, spacing: 2) {
+                        Text(UnitFormat.distance(meters: aircraft.distance(to: userCoord), unit: settings.distanceUnit))
+                            .font(.subheadline.bold().monospacedDigit())
+                        Text("away")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
                 }
+
+                // Follow button
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        follow.toggle(aircraft)
+                    }
+                } label: {
+                    Image(systemName: isFollowed ? "location.fill" : "location")
+                        .font(.caption)
+                        .foregroundStyle(isFollowed ? .green : .secondary)
+                        .padding(6)
+                        .background(.thinMaterial, in: .circle)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(isFollowed ? "Unfollow" : "Follow")
             }
         }
         .padding(.vertical, 6)

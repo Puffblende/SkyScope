@@ -1,6 +1,7 @@
 import SwiftUI
 import MapKit
 import SwiftData
+import ActivityKit
 
 /// Primary tab. Shows the user's location, search radius and nearby aircraft.
 struct MapView: View {
@@ -8,6 +9,7 @@ struct MapView: View {
     @Environment(LocationService.self) private var location
     @Environment(AircraftDataStore.self) private var dataStore
     @Environment(NavigationCoordinator.self) private var navigation
+    @Environment(FollowStore.self) private var follow
     @Query private var favorites: [Favorite]
 
     @State private var cameraPosition: MapCameraPosition = .userLocation(fallback: .automatic)
@@ -20,6 +22,11 @@ struct MapView: View {
     @State private var preToggleRegion: MKCoordinateRegion?
     // True while the pill has zoomed out to show the full search radius.
     @State private var isRadiusModeActive = false
+
+    // Map feature states
+    @State private var headingModeEnabled = false
+    @State private var currentCameraDistance: CLLocationDistance = 8_000
+    @State private var lastAppliedHeading: Double = -999
 
     private var favoriteRegistrations: Set<String> {
         Set(favorites.map { $0.registration })
@@ -49,7 +56,8 @@ struct MapView: View {
                     ) {
                         AircraftAnnotation(
                             aircraft: aircraft,
-                            isFavorite: isFavorite(aircraft)
+                            isFavorite: isFavorite(aircraft),
+                            isFollowed: follow.isFollowing(aircraft)
                         )
                         .onTapGesture {
                             selectedAircraft = aircraft
@@ -65,6 +73,8 @@ struct MapView: View {
             }
             .onMapCameraChange(frequency: .onEnd) { context in
                 currentVisibleRegion = context.region
+                // Track camera distance for heading mode zoom preservation
+                currentCameraDistance = context.camera.distance
             }
             .navigationTitle("SkyScope")
             .navigationBarTitleDisplayMode(.inline)
@@ -92,15 +102,15 @@ struct MapView: View {
                         .padding(.top, 6)
                 }
             }
-            .overlay(alignment: .bottomLeading) {
-                radiusPillButton
-                    .padding(.leading, 16)
-                    .padding(.bottom, 16)
-            }
-            .overlay(alignment: .bottomTrailing) {
-                mapStyleButton
-                    .padding(.trailing, 16)
-                    .padding(.bottom, 16)
+            .overlay(alignment: .bottom) {
+                HStack(spacing: 12) {
+                    radiusPillButton
+                    Spacer()
+                    mapStyleButton
+                    headingModeButton
+                }
+                .padding(.horizontal, 16)
+                .padding(.bottom, 16)
             }
             .sheet(item: $selectedAircraft) { aircraft in
                 AircraftDetailSheet(
@@ -123,6 +133,25 @@ struct MapView: View {
                     frameRegionAroundUser(coord)
                 }
             }
+            // Update map heading when heading mode is on and device rotates.
+            // Linear animation avoids the ease-in lag that causes stickiness when updates
+            // arrive faster than the animation duration.
+            .onChange(of: location.heading) { _, newHeading in
+                guard headingModeEnabled, let heading = newHeading else { return }
+                // Skip if change is less than 4° — smooths out sensor noise beyond CLLocationManager's 2° filter.
+                guard headingDelta(heading.trueHeading, lastAppliedHeading) >= 4 else { return }
+                lastAppliedHeading = heading.trueHeading
+                if let userCoord = location.currentLocation?.coordinate {
+                    withAnimation(.linear(duration: 0.1)) {
+                        cameraPosition = .camera(MapCamera(
+                            centerCoordinate: userCoord,
+                            distance: currentCameraDistance,
+                            heading: heading.trueHeading,
+                            pitch: 0
+                        ))
+                    }
+                }
+            }
             // Handle deep-links from "Show on Map" in detail sheet. Pan only — do NOT auto-open sheet.
             .onChange(of: navigation.pendingFocus) { _, newValue in
                 guard let target = newValue else { return }
@@ -135,7 +164,42 @@ struct MapView: View {
                 }
                 navigation.pendingFocus = nil
             }
+            // Live Activity tap deep-link: match callsign → pan map → open detail sheet.
+            // Fires both when the URL arrives AND after each aircraft refresh so cold-launch
+            // timing (URL arrives before first fetch) is handled automatically.
+            .onChange(of: navigation.pendingDeepLinkCallsign) { _, _ in
+                resolveDeepLink()
+            }
+            .onChange(of: dataStore.aircraft) { _, _ in
+                resolveDeepLink()
+            }
         }
+    }
+
+    /// Tries to match `navigation.pendingDeepLinkCallsign` against the current aircraft list.
+    /// Pans the map and opens the detail sheet on a match; leaves the callsign pending if
+    /// the list is empty (will be retried by the onChange above).
+    private func resolveDeepLink() {
+        guard let callsign = navigation.pendingDeepLinkCallsign,
+              !dataStore.aircraft.isEmpty else { return }
+
+        guard let match = dataStore.aircraft.first(where: {
+            $0.displayName.uppercased() == callsign.uppercased()
+        }) else {
+            // Aircraft left radius or callsign mismatch — clear so we don't retry forever.
+            navigation.pendingDeepLinkCallsign = nil
+            return
+        }
+
+        withAnimation(.easeInOut(duration: 0.4)) {
+            cameraPosition = .region(MKCoordinateRegion(
+                center: match.coordinate,
+                latitudinalMeters: 15_000,
+                longitudinalMeters: 15_000
+            ))
+        }
+        selectedAircraft = match
+        navigation.pendingDeepLinkCallsign = nil
     }
 
     /// Tappable pill: toggles between "show full search radius" and the user's previous zoom.
@@ -183,6 +247,24 @@ struct MapView: View {
         }
     }
 
+    /// Heading mode button - toggles compass-relative map rotation.
+    private var headingModeButton: some View {
+        Button {
+            headingModeEnabled.toggle()
+            if headingModeEnabled {
+                location.startUpdatingHeading()
+            } else {
+                location.stopUpdatingHeading()
+            }
+        } label: {
+            Image(systemName: headingModeEnabled ? "location.north.line.fill" : "location.north.line")
+                .foregroundStyle(headingModeEnabled ? .blue : .gray)
+                .padding(10)
+                .background(.thinMaterial, in: .circle)
+        }
+        .accessibilityLabel("Heading mode")
+    }
+
     private func mapIconForStyle(_ style: MapStyleOption) -> String {
         switch style {
         case .standard: return "map"
@@ -222,6 +304,14 @@ struct MapView: View {
         }
     }
 
+    /// Shortest angular distance between two headings (handles 359° → 1° wraparound).
+    private func headingDelta(_ a: Double, _ b: Double) -> Double {
+        var d = (a - b).truncatingRemainder(dividingBy: 360)
+        if d > 180 { d -= 360 }
+        if d < -180 { d += 360 }
+        return abs(d)
+    }
+
     private var mapStyleForSelection: MapStyle {
         switch settings.mapStyle {
         case .standard:
@@ -232,6 +322,7 @@ struct MapView: View {
             MapStyle.hybrid(elevation: .realistic)
         }
     }
+
 }
 
 #Preview {
