@@ -13,6 +13,8 @@ final class AircraftDataStore {
     private(set) var isLoading: Bool = false
     private(set) var lastFetchAt: Date?
     private(set) var lastError: String?
+    /// True while the app is in the foreground; controls the polling interval.
+    var isForeground: Bool = true
 
     private let router: APIRouter
     private let settings: SettingsStore
@@ -46,11 +48,16 @@ final class AircraftDataStore {
     /// background location updates automatically. Re-entrant safe.
     func startPolling() {
         pollingTask?.cancel()
+        let configured = Double(settings.refreshInterval.rawValue)
+        let effectiveInterval = isForeground ? min(30, configured) : configured
+        DebugStore.shared.log("🔄 Polling started · \(isForeground ? "foreground" : "background") · \(Int(effectiveInterval))s")
         pollingTask = Task { @MainActor [weak self] in
             while !Task.isCancelled {
                 await self?.refresh()
-                let seconds = self?.settings.refreshInterval.rawValue ?? 120
-                try? await Task.sleep(for: .seconds(Double(seconds)))
+                let configured = Double(self?.settings.refreshInterval.rawValue ?? 120)
+                // In foreground always poll at most every 30 s for fresher positions.
+                let seconds = (self?.isForeground ?? true) ? min(30, configured) : configured
+                try? await Task.sleep(for: .seconds(seconds))
             }
         }
         // Start observing isRunning so background location follows Live Activity lifecycle.
@@ -68,6 +75,7 @@ final class AircraftDataStore {
         guard let coord = location.currentLocation?.coordinate else {
             lastError = "Waiting for location…"
             print("[STORE] ⚠️ No location yet — skipping fetch")
+            DebugStore.shared.log("⚠️ No location — skipping fetch", isError: true)
             return
         }
         isLoading = true
@@ -75,12 +83,29 @@ final class AircraftDataStore {
         print("[STORE] 🔄 Fetching near \(String(format: "%.4f", coord.latitude)), \(String(format: "%.4f", coord.longitude)) radius \(Int(settings.radiusInMeters / 1_000)) km")
         do {
             let result = try await router.fetch(near: coord, radiusMeters: settings.radiusInMeters)
-            self.aircraft = result.sorted { lhs, rhs in
+            let sortedResult = result.sorted { lhs, rhs in
                 lhs.distance(to: coord) < rhs.distance(to: coord)
+            }
+            // Merge: preserve accumulated route/track data for already-known aircraft.
+            let existingById = Dictionary(uniqueKeysWithValues: self.aircraft.map { ($0.id, $0) })
+            self.aircraft = sortedResult.map { fresh in
+                guard var existing = existingById[fresh.id] else { return fresh }
+                existing.coordinate = fresh.coordinate
+                existing.altitudeMeters = fresh.altitudeMeters
+                existing.groundSpeedMps = fresh.groundSpeedMps
+                existing.headingDegrees = fresh.headingDegrees
+                existing.squawk = fresh.squawk
+                existing.onGround = fresh.onGround
+                existing.lastUpdate = fresh.lastUpdate
+                if let a = fresh.airline { existing.airline = a }
+                if let t = fresh.aircraftType { existing.aircraftType = t }
+                return existing
             }
             self.lastFetchAt = .now
             self.lastError = nil
-            print("[STORE] ✅ \(self.aircraft.count) aircraft via \(router.lastUsedProvider ?? "?")")
+            let provider = router.lastUsedProvider ?? "?"
+            print("[STORE] ✅ \(self.aircraft.count) aircraft via \(provider)")
+            DebugStore.shared.log("✅ \(self.aircraft.count) aircraft · \(provider)")
             // Clear follow if that aircraft is no longer in range.
             if let followedId = follow.followedId,
                !self.aircraft.contains(where: { $0.id == followedId }) {
@@ -94,6 +119,7 @@ final class AircraftDataStore {
         } catch {
             self.lastError = error.localizedDescription
             print("[STORE] ❌ Fetch failed: \(error.localizedDescription)")
+            DebugStore.shared.log("❌ \(error.localizedDescription)", isError: true)
         }
     }
 

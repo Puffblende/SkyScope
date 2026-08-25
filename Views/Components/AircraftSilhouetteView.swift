@@ -16,6 +16,18 @@ struct AircraftSilhouetteView: View {
         return AircraftWikipediaMapper.displayName(for: type)
     }
 
+    private var noPhotoView: some View {
+        VStack(spacing: 8) {
+            Image(systemName: "photo.slash")
+                .font(.system(size: 40))
+                .foregroundStyle(.secondary)
+            Text("No photo available")
+                .font(.callout)
+                .foregroundStyle(.secondary)
+        }
+        .frame(height: 250)
+    }
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 16) {
@@ -32,24 +44,16 @@ struct AircraftSilhouetteView: View {
                                     .scaledToFit()
                                     .frame(maxHeight: 300)
                             case .failure:
-                                Image(systemName: "airplane")
-                                    .font(.system(size: 80))
-                                    .foregroundStyle(.secondary)
-                                    .frame(height: 250)
+                                noPhotoView
                             @unknown default:
-                                Image(systemName: "airplane")
-                                    .font(.system(size: 80))
-                                    .frame(height: 250)
+                                noPhotoView
                             }
                         }
                     } else if isLoading {
                         ProgressView()
                             .frame(height: 250)
                     } else {
-                        Image(systemName: "airplane")
-                            .font(.system(size: 80))
-                            .foregroundStyle(.secondary)
-                            .frame(height: 250)
+                        noPhotoView
                     }
 
                     VStack(spacing: 2) {

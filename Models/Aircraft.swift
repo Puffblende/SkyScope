@@ -1,6 +1,7 @@
 import Foundation
 import CoreLocation
 
+// MARK: - Aircraft
 
 /// Domain model representing a single aircraft snapshot returned by an upstream API.
 /// This is API-agnostic: both FlightAware and OpenSky responses are mapped into this type.
@@ -71,5 +72,28 @@ extension Aircraft {
         }
         if let registration, !registration.isEmpty { return registration }
         return id
+    }
+
+    /// Returns a copy with the coordinate projected forward by `seconds` using
+    /// the aircraft's current speed and heading. Ground aircraft are returned unchanged.
+    /// Elapsed time is clamped to 120 s to limit drift when data is stale.
+    func interpolated(by seconds: Double) -> Aircraft {
+        guard !onGround,
+              let speed = groundSpeedMps, speed > 0,
+              let heading = headingDegrees,
+              seconds > 0 else { return self }
+
+        let elapsed = min(seconds, 120)
+        let dist = speed * elapsed
+        let headingRad = heading * .pi / 180
+        let lat = coordinate.latitude
+        let cosLat = cos(lat * .pi / 180)
+
+        var copy = self
+        copy.coordinate = CLLocationCoordinate2D(
+            latitude:  lat + (dist * cos(headingRad)) / 111_320,
+            longitude: coordinate.longitude + (dist * sin(headingRad)) / (111_320 * max(cosLat, 0.001))
+        )
+        return copy
     }
 }

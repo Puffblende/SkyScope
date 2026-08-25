@@ -108,7 +108,21 @@ extension LocationService: CLLocationManagerDelegate {
 
     nonisolated func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         Task { @MainActor in
-            self.lastError = error.localizedDescription
+            guard let clError = error as? CLError else {
+                self.lastError = "Location unavailable."
+                return
+            }
+            switch clError.code {
+            case .locationUnknown:
+                // Transient — location will arrive shortly, no message needed
+                break
+            case .denied:
+                self.lastError = "Location access denied — enable it in Settings → Privacy → Location Services."
+            case .network:
+                self.lastError = "Location unavailable — check your network connection."
+            default:
+                self.lastError = "Location error — please try again."
+            }
         }
     }
 

@@ -3,7 +3,7 @@ import CoreLocation
 import UIKit
 import UserNotifications
 
-/// Seven-slide first-launch onboarding. Shown once; dismissed permanently when complete.
+/// Five-slide first-launch onboarding. Shown once; dismissed permanently when complete.
 struct OnboardingView: View {
     let onComplete: () -> Void
 
@@ -11,19 +11,17 @@ struct OnboardingView: View {
 
     @State private var step = 0
     @State private var isWaitingForLocation = false
-    private let total = 7
+    private let total = 5
 
     var body: some View {
         ZStack {
             // Slides — TabView fills the full screen (ignores safe areas).
             TabView(selection: $step) {
-                slideWelcome.tag(0)
-                slideHowItWorks.tag(1)
-                slide0.tag(2)
-                slide1.tag(3)
-                slide2.tag(4)
-                slide3.tag(5)
-                slide4.tag(6)
+                slide0.tag(0)
+                slide1.tag(1)
+                slide2.tag(2)
+                slide3.tag(3)
+                slide4.tag(4)
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
             .ignoresSafeArea()
@@ -98,23 +96,21 @@ struct OnboardingView: View {
 
     private func handleContinue() {
         switch step {
-        case 2:
+        case 0:
             // Location slide: show system dialog, advance after user responds.
             if location.authorizationStatus != .notDetermined {
-                // Permission already determined (e.g. previously installed), just advance.
                 advance()
             } else {
                 isWaitingForLocation = true
                 location.requestAuthorization()
             }
-        case 5:
+        case 3:
             // Live Activity slide: request notification permission, then advance.
             Task {
                 let granted = (try? await UNUserNotificationCenter.current()
                     .requestAuthorization(options: [.alert, .badge, .sound])) ?? false
                 await MainActor.run {
                     if granted {
-                        // Register APNs token for Firebase Cloud Messaging.
                         UIApplication.shared.registerForRemoteNotifications()
                     }
                     advance()
@@ -134,50 +130,28 @@ struct OnboardingView: View {
     // MARK: - Button label
 
     private var buttonLabel: String {
-        switch step {
-        case 2: return "Allow Location Access"
-        case total - 1: return "Get Started"
-        default: return "Continue"
-        }
+        step == total - 1 ? "Get Started" : "Continue"
     }
 
     // MARK: - Button text colour (dark shade matching each slide's background)
 
     private var buttonTextColor: Color {
         switch step {
-        case 0:  return Color(red: 0.102, green: 0.051, blue: 0.243)  // Welcome: dark violet
-        case 1:  return Color(red: 0.024, green: 0.157, blue: 0.188)  // How It Works: dark teal
-        case 2:  return Color(red: 0.043, green: 0.118, blue: 0.239)  // Location: dark blue
-        case 3:  return Color(red: 0.027, green: 0.231, blue: 0.227)  // Radius: dark teal
-        case 4:  return Color(red: 0.078, green: 0.157, blue: 0.314)  // Map: mid blue
-        case 5:  return Color(red: 0.020, green: 0.027, blue: 0.051)  // Live Activity: near-black
-        default: return Color(red: 0.169, green: 0.063, blue: 0.333)  // Favorites: dark purple
+        case 0: return Color(red: 0.043, green: 0.118, blue: 0.239)  // Location: dark blue
+        case 1: return Color(red: 0.027, green: 0.231, blue: 0.227)  // Radius: dark teal
+        case 2: return Color(red: 0.078, green: 0.157, blue: 0.314)  // Map: mid blue
+        case 3: return Color(red: 0.020, green: 0.027, blue: 0.051)  // Live Activity: near-black
+        default: return Color(red: 0.169, green: 0.063, blue: 0.333) // Favorites: dark purple
         }
     }
 
     // MARK: - Slides
 
-    private var slideWelcome: some View {
-        shell(
-            colors: [Color(hex: "1a0d3e"), Color(hex: "3d1470"), Color(hex: "c07525")],
-            title: "Welcome to SkyScope",
-            body: "Designed from the flight deck, for everyone who can't stop looking up. Whether you're spotting at the fence or tracking the club aircraft — every flight overhead is one glance away."
-        ) { WelcomeIllustration() }
-    }
-
-    private var slideHowItWorks: some View {
-        shell(
-            colors: [Color(hex: "062838"), Color(hex: "0a4a5c"), Color(hex: "0d7870")],
-            title: "Here's How It Works",
-            body: "Define your search radius — say 50 km (27 NM). Only aircraft within that circle appear on your map, nearest first. Start the Live Activity and the closest flight updates live right on your Lock Screen."
-        ) { HowItWorksIllustration() }
-    }
-
     private var slide0: some View {
         shell(
             colors: [Color(hex: "0b1e3d"), Color(hex: "16386b"), Color(hex: "1f4d8f")],
             title: "Location Access",
-            body: "SkyScope needs your location to find aircraft within your search radius and center the map on you."
+            body: "SkyScope needs your location to find aircraft within your search radius and center the map on you. Foreground access is enough — background access is only used if you turn on Live Activity tracking."
         ) { RadarIllustration() }
     }
 
@@ -201,7 +175,7 @@ struct OnboardingView: View {
         shell(
             colors: [Color(hex: "05070d"), Color(hex: "12151f"), Color(hex: "1c2333")],
             title: "Live Activity",
-            body: "That plane overhead — where is it coming from, where is it heading, what type is it? The Live Activity puts the answer on your Lock Screen without ever opening the app. It updates automatically while you go about your day."
+            body: "Track nearby aircraft from your Lock Screen and Dynamic Island. It switches to Favorite mode automatically when a tracked registration is airborne, and ends when it lands."
         ) { IslandIllustration() }
     }
 
@@ -258,132 +232,7 @@ struct OnboardingView: View {
     }
 }
 
-// MARK: - Slide 0: Welcome
-
-private struct WelcomeIllustration: View {
-    @State private var planeFloat: CGFloat = 0
-    @State private var glowPulse: Double = 8
-    @State private var starA: Double = 0.3
-    @State private var starB: Double = 0.5
-    @State private var starC: Double = 0.2
-
-    var body: some View {
-        ZStack {
-            // Amber horizon glow
-            Ellipse()
-                .fill(
-                    RadialGradient(
-                        colors: [Color(hex: "c07525").opacity(0.55), .clear],
-                        center: .center, startRadius: 0, endRadius: 80
-                    )
-                )
-                .frame(width: 160, height: 65)
-                .offset(y: 72)
-
-            // Horizon line
-            Rectangle()
-                .fill(Color.white.opacity(0.14))
-                .frame(width: 250, height: 1)
-                .offset(y: 74)
-
-            // Stars twinkling above the horizon
-            starDot(x: -88, y: -62, opacity: starA, size: 3.5)
-            starDot(x:  68, y: -76, opacity: starB, size: 3)
-            starDot(x: -36, y: -30, opacity: starC, size: 2.5)
-            starDot(x:  96, y: -38, opacity: starA, size: 2.5)
-            starDot(x:  18, y: -86, opacity: starB, size: 3.5)
-            starDot(x: -64, y: -52, opacity: starC, size: 2.5)
-
-            // Main airplane — angled slightly upward, floating gently
-            Image(systemName: "airplane")
-                .font(.system(size: 60, weight: .light))
-                .foregroundStyle(.white)
-                .rotationEffect(.degrees(-20))
-                .offset(y: planeFloat)
-                .shadow(color: Color(hex: "c07525").opacity(0.65), radius: glowPulse)
-        }
-        .frame(width: 250, height: 220)
-        .onAppear {
-            withAnimation(.easeInOut(duration: 4).repeatForever(autoreverses: true)) { planeFloat = -14 }
-            withAnimation(.easeInOut(duration: 2.5).repeatForever(autoreverses: true)) { glowPulse = 22 }
-            withAnimation(.easeInOut(duration: 2.2).repeatForever(autoreverses: true)) { starA = 1.0 }
-            withAnimation(.easeInOut(duration: 2.7).repeatForever(autoreverses: true).delay(0.5)) { starB = 1.0 }
-            withAnimation(.easeInOut(duration: 2.0).repeatForever(autoreverses: true).delay(1.1)) { starC = 1.0 }
-        }
-    }
-
-    private func starDot(x: CGFloat, y: CGFloat, opacity: Double, size: CGFloat) -> some View {
-        Circle().fill(.white).frame(width: size, height: size).opacity(opacity).offset(x: x, y: y)
-    }
-}
-
-// MARK: - Slide 1: How It Works
-
-private struct HowItWorksIllustration: View {
-    @State private var ringScale: CGFloat = 0.5
-    @State private var ringOpacity: Double = 0.9
-    @State private var plane1: Double = 0
-    @State private var plane2: Double = 0
-    @State private var plane3: Double = 0
-    @State private var nearestPulse: Double = 1.0
-
-    var body: some View {
-        ZStack {
-            // Outer dashed radius ring
-            Circle()
-                .stroke(style: StrokeStyle(lineWidth: 1.5, dash: [6, 4]))
-                .foregroundStyle(Color.white.opacity(0.35))
-                .frame(width: 210, height: 210)
-
-            // Inner reference ring
-            Circle()
-                .stroke(Color.white.opacity(0.12), lineWidth: 1)
-                .frame(width: 124, height: 124)
-
-            // Expanding pulse ring (radar sweep feel)
-            Circle()
-                .stroke(Color.white.opacity(ringOpacity), lineWidth: 1.2)
-                .frame(width: 210, height: 210)
-                .scaleEffect(ringScale)
-
-            // Aircraft appearing inside the radius
-            plane(x:  54, y: -56, angle:  35, opacity: plane1, nearest: false)
-            plane(x: -64, y:  20, angle: -18, opacity: plane2, nearest: false)
-            plane(x:  22, y:  66, angle:  65, opacity: plane3, nearest: true)
-
-            // Center: user location pin
-            ZStack {
-                Circle().fill(Color.white.opacity(0.18)).frame(width: 30, height: 30)
-                Image(systemName: "location.fill").font(.system(size: 14)).foregroundStyle(.white)
-            }
-        }
-        .frame(width: 220, height: 220)
-        .onAppear {
-            withAnimation(.easeOut(duration: 2.2).repeatForever(autoreverses: false)) {
-                ringScale = 1.05
-                ringOpacity = 0
-            }
-            withAnimation(.easeIn(duration: 0.7).delay(0.4)) { plane1 = 1.0 }
-            withAnimation(.easeIn(duration: 0.7).delay(0.9)) { plane2 = 1.0 }
-            withAnimation(.easeIn(duration: 0.7).delay(1.4)) { plane3 = 1.0 }
-            withAnimation(.easeInOut(duration: 1.8).repeatForever(autoreverses: true)) { nearestPulse = 1.25 }
-        }
-    }
-
-    private func plane(x: CGFloat, y: CGFloat, angle: Double, opacity: Double, nearest: Bool) -> some View {
-        let accent = Color(hex: "f4a623")
-        return Image(systemName: "airplane")
-            .font(.system(size: nearest ? 18 : 13, weight: .medium))
-            .foregroundStyle(nearest ? accent : Color.white.opacity(0.75))
-            .rotationEffect(.degrees(angle))
-            .scaleEffect(nearest ? nearestPulse : 1.0)
-            .shadow(color: nearest ? accent.opacity(0.7) : .clear, radius: 6)
-            .offset(x: x, y: y)
-            .opacity(opacity)
-    }
-}
-
-// MARK: - Slide 2: Radar
+// MARK: - Slide 0: Radar
 
 private struct RadarIllustration: View {
     @State private var angle: Double = 0
@@ -485,96 +334,64 @@ private struct PlaneIllustration: View {
     }
 }
 
-// MARK: - Slide 3: Live Activity card (mirrors the actual Lock Screen layout)
+// MARK: - Slide 3: Live Activity card (matches the design)
 
 private struct IslandIllustration: View {
-    @State private var glow: Double = 6
-    @State private var progress: CGFloat = 0.5
+    @State private var glowOpacity: Double = 0.25
 
     var body: some View {
-        // Content drives the height; background adapts — prevents the shape from
-        // expanding to fill all available vertical space in the slide VStack.
-        VStack(alignment: .leading, spacing: 10) {
-            // Header: ✈ callsign  type  registration
-            HStack(spacing: 5) {
-                Image(systemName: "airplane")
-                    .font(.footnote.bold())
-                    .foregroundStyle(.blue)
-                Text("EXS7CT")
-                    .font(.system(size: 15, weight: .bold))
-                    .foregroundStyle(.white)
-                Text("Boeing 737-800")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-                Text("G-JZBP")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                Spacer()
-            }
+        ZStack {
+            // Animated blue glow behind the card
+            RoundedRectangle(cornerRadius: 26)
+                .fill(Color(red: 0.35, green: 0.55, blue: 1.0).opacity(glowOpacity))
+                .blur(radius: 24)
+                .frame(width: 230, height: 90)
 
-            // Route progress bar
-            GeometryReader { geo in
-                HStack(spacing: 6) {
-                    Text("EGAA")
-                        .font(.caption.bold())
-                        .foregroundStyle(.blue)
-                        .fixedSize()
+            // Card
+            VStack(alignment: .leading, spacing: 10) {
+                HStack {
+                    Text("D-EVGK")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(.white)
+                    Spacer()
+                    Text("Airborne")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(.white.opacity(0.6))
+                }
 
-                    ZStack(alignment: .leading) {
-                        RoundedRectangle(cornerRadius: 2)
-                            .fill(Color.gray.opacity(0.3))
-                            .frame(height: 2)
-                        Image(systemName: "airplane.circle.fill")
-                            .font(.caption)
-                            .foregroundStyle(.blue)
-                            .offset(x: progress * (geo.size.width - 48) - 6)
-                    }
-                    .frame(maxWidth: .infinity)
-
-                    Text("LTAI")
-                        .font(.caption.bold())
-                        .foregroundStyle(.blue)
-                        .fixedSize()
+                HStack(alignment: .lastTextBaseline, spacing: 0) {
+                    Text("4,200")
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundStyle(.white)
+                    Text(" ft")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.white.opacity(0.5))
+                    Spacer()
+                    Text("112")
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundStyle(.white)
+                    Text(" kts")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.white.opacity(0.5))
                 }
             }
-            .frame(height: 12)
-
-            // Telemetry grid: ALT | SPD | HDG | SQK
-            HStack(spacing: 0) {
-                telemetryCell(label: "ALT", value: "38.000 ft")
-                Divider().frame(height: 28)
-                telemetryCell(label: "SPD", value: "430 kts")
-                Divider().frame(height: 28)
-                telemetryCell(label: "HDG", value: "306°")
-                Divider().frame(height: 28)
-                telemetryCell(label: "SQK", value: "3113")
+            .padding(.horizontal, 20)
+            .padding(.vertical, 18)
+            .frame(width: 210)
+            .background(
+                RoundedRectangle(cornerRadius: 26)
+                    .fill(Color.white.opacity(0.08))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 26)
+                            .stroke(Color.white.opacity(0.15), lineWidth: 1)
+                    )
+            )
+        }
+        .onAppear {
+            withAnimation(.easeInOut(duration: 3).repeatForever(autoreverses: true)) {
+                glowOpacity = 0.45
             }
         }
-        .padding(12)
-        .background(
-            RoundedRectangle(cornerRadius: 20)
-                .fill(Color.black)
-                .shadow(color: Color.blue.opacity(0.45), radius: glow)
-        )
-        .padding(.horizontal, 20)
-        .onAppear {
-            withAnimation(.easeInOut(duration: 3).repeatForever(autoreverses: true)) { glow = 20 }
-            withAnimation(.easeInOut(duration: 6).repeatForever(autoreverses: true)) { progress = 0.7 }
-        }
-    }
-
-    private func telemetryCell(label: String, value: String) -> some View {
-        VStack(alignment: .center, spacing: 2) {
-            Text(label)
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-            Text(value)
-                .font(.system(.caption, design: .monospaced))
-                .foregroundStyle(.white)
-                .lineLimit(1)
-        }
-        .frame(maxWidth: .infinity)
     }
 }
 

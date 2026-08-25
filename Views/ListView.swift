@@ -11,7 +11,8 @@ struct ListView: View {
     @Query private var favorites: [Favorite]
 
     @State private var selectedAircraft: Aircraft?
-    @State private var refreshToast: String? = nil
+    @State private var refreshToast: String?
+    @State private var isRefreshing = false
 
     private var favoriteRegistrations: Set<String> {
         Set(favorites.map { $0.registration })
@@ -19,31 +20,32 @@ struct ListView: View {
 
     var body: some View {
         NavigationStack {
-            List(dataStore.aircraft) { aircraft in
-                Button {
-                    selectedAircraft = aircraft
-                } label: {
-                    aircraftRow(aircraft)
+            ZStack {
+                List {
+                    // Zero-height spy row: traverses to the UIScrollView via KVO to
+                    // report pull offset and make the system refresh indicator invisible.
+                    ScrollOffsetObserver()
+                        .frame(width: 0, height: 0)
+                        .listRowSeparator(.hidden)
+                        .listRowInsets(EdgeInsets())
+                        .listRowBackground(Color.clear)
+
+                    ForEach(dataStore.aircraft) { aircraft in
+                        Button {
+                            selectedAircraft = aircraft
+                        } label: {
+                            aircraftRow(aircraft)
+                        }
+                        .buttonStyle(.plain)
+                    }
                 }
-                .buttonStyle(.plain)
-            }
-            .listStyle(.plain)
-            // refreshable must be on the List directly — Group/overlay wrappers break it.
-            .refreshable {
-                await dataStore.refresh()
-                let count = dataStore.aircraft.count
-                if let error = dataStore.lastError {
-                    refreshToast = "Error: \(error)"
-                } else {
-                    refreshToast = count == 0
-                        ? "No aircraft in range"
-                        : "\(count) aircraft found"
+                .listStyle(.plain)
+                .refreshable {
+                    await performRefresh()
                 }
-                try? await Task.sleep(nanoseconds: 2_500_000_000)
-                refreshToast = nil
-            }
-            .overlay {
-                if dataStore.aircraft.isEmpty && !dataStore.isLoading {
+
+                // Full-screen empty state sits outside the List so it fills the screen.
+                if dataStore.aircraft.isEmpty && !isRefreshing && !dataStore.isLoading {
                     ContentUnavailableView {
                         Label("No aircraft", systemImage: "airplane.circle")
                     } description: {
@@ -53,22 +55,9 @@ struct ListView: View {
             }
             .navigationTitle("Aircraft Nearby")
             .navigationBarTitleDisplayMode(.large)
-            .overlay(alignment: .top) {
-                if let toast = refreshToast {
-                    Text(toast)
-                        .font(.caption)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 8)
-                        .background(dataStore.lastError != nil ? Color.red.opacity(0.85) : Color.secondary.opacity(0.85), in: .capsule)
-                        .foregroundStyle(.white)
-                        .padding(.top, 8)
-                        .transition(.move(edge: .top).combined(with: .opacity))
-                        .animation(.easeInOut(duration: 0.3), value: refreshToast)
-                }
-            }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    if dataStore.isLoading {
+                    if dataStore.isLoading && !isRefreshing {
                         ProgressView()
                     }
                 }
@@ -81,7 +70,41 @@ struct ListView: View {
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
             }
+            .overlay(alignment: .top) {
+                if let toast = refreshToast {
+                    Text(toast)
+                        .font(.caption)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 8)
+                        .background(
+                            dataStore.lastError != nil
+                                ? Color.red.opacity(0.85)
+                                : Color.secondary.opacity(0.85),
+                            in: .capsule
+                        )
+                        .foregroundStyle(.white)
+                        .padding(.top, 8)
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                        .animation(.easeInOut(duration: 0.3), value: refreshToast)
+                }
+            }
         }
+    }
+
+    private func performRefresh() async {
+        withAnimation { isRefreshing = true }
+        await dataStore.refresh()
+
+        let count = dataStore.aircraft.count
+        withAnimation {
+            refreshToast = dataStore.lastError.map { "Error: \($0)" }
+                ?? (count == 0 ? "No aircraft in range" : "\(count) aircraft found")
+        }
+
+        try? await Task.sleep(for: .milliseconds(800))
+        withAnimation { isRefreshing = false }
+        try? await Task.sleep(for: .seconds(2))
+        withAnimation { refreshToast = nil }
     }
 
     @ViewBuilder
@@ -200,6 +223,125 @@ struct ListView: View {
         case let (origin?, nil): return "\(origin) → ?"
         case let (nil, destination?): return "? → \(destination)"
         default: return nil
+        }
+    }
+}
+
+// MARK: - UIScrollView spy + custom refresh indicator
+
+/// Zero-height row that traverses up to the List's UIScrollView, hides the
+/// system refresh spinner, and injects a custom CAAnimation orbit indicator
+/// directly inside the UIRefreshControl. UIKit then owns all positioning:
+/// it holds the refresh control in place while fetching and springs it back
+/// when done — no SwiftUI overlay needed.
+private struct ScrollOffsetObserver: UIViewRepresentable {
+    func makeCoordinator() -> Coordinator { Coordinator() }
+
+    func makeUIView(context: Context) -> UIView {
+        let v = UIView()
+        v.isHidden = true
+        return v
+    }
+
+    func updateUIView(_ uiView: UIView, context: Context) {
+        DispatchQueue.main.async { context.coordinator.attach(to: uiView) }
+    }
+
+    final class Coordinator: NSObject {
+        private weak var scrollView: UIScrollView?
+        private var observation: NSKeyValueObservation?
+        private weak var orbitContainer: UIView?
+        private var hasAttached = false
+        private let orbitDiameter: CGFloat = 36
+        private let threshold: CGFloat = 70
+
+        func attach(to view: UIView) {
+            guard !hasAttached else { return }
+            var cur: UIView? = view.superview
+            while let v = cur {
+                if let sv = v as? UIScrollView {
+                    hasAttached = true
+                    scrollView = sv
+                    // Drive orbit container alpha from pull distance so it fades in as you pull.
+                    observation = sv.observe(\.contentOffset, options: .new) { [weak self] sv, _ in
+                        guard let self else { return }
+                        // While the refresh control is held open by UIKit (isRefreshing == true),
+                        // adjustedContentInset already includes the control height so the pull
+                        // calculation returns 0 — keep alpha at 1 for the duration of the fetch.
+                        let isActive = sv.refreshControl?.isRefreshing ?? false
+                        let pull = max(0, -(sv.contentOffset.y + sv.adjustedContentInset.top))
+                        let alpha = isActive ? 1.0 : min(pull / self.threshold, 1.0)
+                        DispatchQueue.main.async { self.orbitContainer?.alpha = alpha }
+                    }
+                    trySetupRefreshControl(sv)
+                    return
+                }
+                cur = v.superview
+            }
+        }
+
+        // SwiftUI creates the UIRefreshControl asynchronously; retry until it appears.
+        private func trySetupRefreshControl(_ sv: UIScrollView, attempt: Int = 0) {
+            guard let rc = sv.refreshControl else {
+                guard attempt < 20 else { return }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { [weak self, weak sv] in
+                    guard let self, let sv else { return }
+                    self.trySetupRefreshControl(sv, attempt: attempt + 1)
+                }
+                return
+            }
+            rc.tintColor = .clear
+            buildOrbit(in: rc)
+        }
+
+        private func buildOrbit(in rc: UIRefreshControl) {
+            let d = orbitDiameter
+
+            // Ring drawn as a CAShapeLayer inside the spinning container.
+            let ring = CAShapeLayer()
+            ring.path = UIBezierPath(ovalIn: CGRect(x: 0, y: 0, width: d, height: d)).cgPath
+            ring.strokeColor = UIColor.systemBlue.withAlphaComponent(0.2).cgColor
+            ring.fillColor = UIColor.clear.cgColor
+            ring.lineWidth = 1.5
+
+            let container = UIView()
+            container.translatesAutoresizingMaskIntoConstraints = false
+            container.layer.addSublayer(ring)
+
+            // Plane placed at the top of the orbit circle.
+            // The container rotates as a whole, so the plane naturally orbits the center.
+            let cfg = UIImage.SymbolConfiguration(pointSize: 13, weight: .semibold)
+            if let img = UIImage(systemName: "airplane", withConfiguration: cfg) {
+                let plane = UIImageView(image: img)
+                plane.tintColor = .systemBlue
+                // Frame-based: centered horizontally, 2pt from top edge.
+                let pw: CGFloat = 16, ph: CGFloat = 16
+                plane.frame = CGRect(x: d / 2 - pw / 2, y: 2, width: pw, height: ph)
+                plane.contentMode = .scaleAspectFit
+                // SF Symbols "airplane" points northeast; +45° makes it face east (right),
+                // which is the direction of travel for a clockwise orbit starting at the top.
+                plane.transform = CGAffineTransform(rotationAngle: .pi / 4)
+                container.addSubview(plane)
+            }
+
+            rc.addSubview(container)
+            NSLayoutConstraint.activate([
+                container.centerXAnchor.constraint(equalTo: rc.centerXAnchor),
+                container.centerYAnchor.constraint(equalTo: rc.centerYAnchor),
+                container.widthAnchor.constraint(equalToConstant: d),
+                container.heightAnchor.constraint(equalToConstant: d),
+            ])
+
+            // Continuous spin — CAAnimation is immune to SwiftUI re-renders.
+            let spin = CABasicAnimation(keyPath: "transform.rotation.z")
+            spin.fromValue = 0
+            spin.toValue = CGFloat.pi * 2
+            spin.duration = 1.2
+            spin.repeatCount = .infinity
+            container.layer.add(spin, forKey: "spin")
+
+            container.alpha = 0
+            orbitContainer = container
         }
     }
 }

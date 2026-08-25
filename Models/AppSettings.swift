@@ -115,6 +115,14 @@ enum AppColorScheme: String, CaseIterable, Identifiable, Codable {
     }
 }
 
+/// Aircraft annotation badge style on the map.
+enum BadgeStyle: String, CaseIterable, Identifiable, Codable {
+    case solid
+    case outline
+
+    var id: String { rawValue }
+}
+
 /// User-selectable map style.
 enum MapStyleOption: String, CaseIterable, Identifiable, Codable {
     case standard
@@ -153,6 +161,7 @@ final class SettingsStore {
         static let openSkyPassword = "settings.api.openSkyPassword"
         static let colorScheme = "settings.appearance.colorScheme"
         static let mapStyle = "settings.appearance.mapStyle"
+        static let badgeStyle = "settings.appearance.badgeStyle"
     }
 
     @ObservationIgnored private let defaults: UserDefaults
@@ -197,6 +206,10 @@ final class SettingsStore {
         didSet { defaults.set(mapStyle.rawValue, forKey: Keys.mapStyle) }
     }
 
+    var badgeStyle: BadgeStyle {
+        didSet { defaults.set(badgeStyle.rawValue, forKey: Keys.badgeStyle) }
+    }
+
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
 
@@ -210,6 +223,7 @@ final class SettingsStore {
         self.openSkyPassword = defaults.string(forKey: Keys.openSkyPassword) ?? ""
         self.colorScheme = AppColorScheme(rawValue: defaults.string(forKey: Keys.colorScheme) ?? "") ?? .system
         self.mapStyle = MapStyleOption(rawValue: defaults.string(forKey: Keys.mapStyle) ?? "") ?? .standard
+        self.badgeStyle = BadgeStyle(rawValue: defaults.string(forKey: Keys.badgeStyle) ?? "") ?? .solid
     }
 
     /// Radius converted to meters for API queries and map overlay rendering.

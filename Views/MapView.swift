@@ -3,6 +3,13 @@ import MapKit
 import SwiftData
 import ActivityKit
 
+// Reference-type camera state so continuous camera-change callbacks don't trigger SwiftUI re-renders.
+private final class MapCameraState {
+    var region: MKCoordinateRegion?
+    var distance: CLLocationDistance = 8_000
+    var heading: CLLocationDegrees = 0
+}
+
 /// Primary tab. Shows the user's location, search radius and nearby aircraft.
 struct MapView: View {
     @Environment(SettingsStore.self) private var settings
@@ -12,21 +19,26 @@ struct MapView: View {
     @Environment(FollowStore.self) private var follow
     @Query private var favorites: [Favorite]
 
-    @State private var cameraPosition: MapCameraPosition = .userLocation(fallback: .automatic)
+    @State private var cameraPosition: MapCameraPosition = .automatic
     @State private var selectedAircraft: Aircraft?
     @State private var hasAutoFramedOnFirstLoad = false
 
-    // Tracks the live visible region so we can capture it before swapping to "radius view".
-    @State private var currentVisibleRegion: MKCoordinateRegion?
-    // When entering radius mode, snapshot what the user was looking at so we can restore it.
-    @State private var preToggleRegion: MKCoordinateRegion?
-    // True while the pill has zoomed out to show the full search radius.
-    @State private var isRadiusModeActive = false
+    // Tracks the aircraft whose sheet is open so we can restore the map center on dismiss.
+    @State private var lastSheetAircraftID: String?
+    // Zoom level captured when the sheet opens — kept constant during aircraft following.
+    @State private var sheetSpan: MKCoordinateSpan?
 
     // Map feature states
     @State private var headingModeEnabled = false
-    @State private var currentCameraDistance: CLLocationDistance = 8_000
     @State private var lastAppliedHeading: Double = -999
+
+    // Live camera state — updated continuously so tap-to-open always has the correct zoom.
+    // Stored as a reference type so property mutations don't trigger view re-renders.
+    @State private var cam = MapCameraState()
+
+    // Non-nil while we're waiting to snap back to the user after they panned away in heading mode.
+    // Heading-mode camera updates are suppressed while this task is pending.
+    @State private var snapBackTask: Task<Void, Never>?
 
     private var favoriteRegistrations: Set<String> {
         Set(favorites.map { $0.registration })
@@ -38,7 +50,14 @@ struct MapView: View {
     }
 
     var body: some View {
-        NavigationStack {
+        // TimelineView at 30 fps drives continuous re-renders so MapKit sees smoothly
+        // interpolated annotation coordinates — @Observable tracking inside
+        // @MapContentBuilder closures is unreliable and won't trigger updates on its own.
+        TimelineView(.periodic(from: .now, by: 1.0 / 30.0)) { context in
+            let interpolatedAircraft = dataStore.aircraft.map {
+                $0.interpolated(by: context.date.timeIntervalSince($0.lastUpdate))
+            }
+            NavigationStack {
             Map(position: $cameraPosition) {
                 UserAnnotation()
 
@@ -48,7 +67,7 @@ struct MapView: View {
                         .stroke(Color.accentColor.opacity(0.6), lineWidth: 1.5)
                 }
 
-                ForEach(dataStore.aircraft) { aircraft in
+                ForEach(interpolatedAircraft) { aircraft in
                     Annotation(
                         aircraft.displayName,
                         coordinate: aircraft.coordinate,
@@ -57,13 +76,20 @@ struct MapView: View {
                         AircraftAnnotation(
                             aircraft: aircraft,
                             isFavorite: isFavorite(aircraft),
-                            isFollowed: follow.isFollowing(aircraft)
+                            isFollowed: follow.isFollowing(aircraft),
+                            isSelected: aircraft.id == selectedAircraft?.id,
+                            badgeStyle: settings.badgeStyle
                         )
                         .onTapGesture {
+                            cancelSnapBack()
+                            lastSheetAircraftID = aircraft.id
                             selectedAircraft = aircraft
+                            sheetSpan = cam.region?.span ?? MKCoordinateSpan(latitudeDelta: 0.135, longitudeDelta: 0.135)
+                            shiftCameraForSheet(to: aircraft.coordinate)
                         }
                     }
                 }
+
             }
             .mapStyle(mapStyleForSelection)
             .mapControls {
@@ -71,11 +97,20 @@ struct MapView: View {
                 MapCompass()
                 MapScaleView()
             }
-            .onMapCameraChange(frequency: .onEnd) { context in
-                currentVisibleRegion = context.region
-                // Track camera distance for heading mode zoom preservation
-                currentCameraDistance = context.camera.distance
+            // Continuous tracking so cam is always current when a tap fires, even mid-gesture.
+            // Mutating class properties doesn't trigger SwiftUI re-renders.
+            .onMapCameraChange(frequency: .continuous) { context in
+                cam.region = context.region
+                cam.distance = context.camera.distance
+                cam.heading = context.camera.heading
             }
+            // Detect user-initiated pan/zoom in heading mode → start snap-back countdown.
+            .simultaneousGesture(DragGesture(minimumDistance: 5).onChanged { _ in
+                if headingModeEnabled && selectedAircraft == nil { scheduleSnapBack() }
+            })
+            .simultaneousGesture(MagnifyGesture().onChanged { _ in
+                if headingModeEnabled && selectedAircraft == nil { scheduleSnapBack() }
+            })
             .navigationTitle("SkyScope")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -103,14 +138,21 @@ struct MapView: View {
                 }
             }
             .overlay(alignment: .bottom) {
-                HStack(spacing: 12) {
-                    radiusPillButton
-                    Spacer()
+                radiusSliderPanel
+                    .padding(.bottom, 16)
+            }
+            .overlay(alignment: .topTrailing) {
+                VStack(spacing: 0) {
                     mapStyleButton
+                    Divider().frame(width: 44)
                     headingModeButton
+                    Divider().frame(width: 44)
+                    fitRadiusButton
                 }
-                .padding(.horizontal, 16)
-                .padding(.bottom, 16)
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+                .shadow(color: .black.opacity(0.12), radius: 6, y: 1)
+                .padding(.top, 60)
+                .padding(.trailing, 16)
             }
             .sheet(item: $selectedAircraft) { aircraft in
                 AircraftDetailSheet(
@@ -121,13 +163,31 @@ struct MapView: View {
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
             }
-            // Frame camera to fit user + search radius once on first location fix.
+            // Frame to radius on every appear — tab switch, cold start.
+            // Small delay lets MapKit complete its initial layout before we override the region.
+            .onAppear {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                    if let coord = location.currentLocation?.coordinate {
+                        frameRegionAroundUser(coord)
+                        hasAutoFramedOnFirstLoad = true
+                    }
+                }
+            }
+            // Re-frame when coming back to the foreground.
+            .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    if let coord = location.currentLocation?.coordinate {
+                        frameRegionAroundUser(coord)
+                    }
+                }
+            }
+            // Cold start: location wasn't available on appear, frame on first fix.
             .onChange(of: location.currentLocation) { _, newValue in
                 guard !hasAutoFramedOnFirstLoad, let coord = newValue?.coordinate else { return }
                 frameRegionAroundUser(coord)
                 hasAutoFramedOnFirstLoad = true
             }
-            // Re-frame when radius changes so the user can see the new circle.
+            // Re-frame whenever the radius changes so the new circle is always visible.
             .onChange(of: settings.radiusInMeters) { _, _ in
                 if let coord = location.currentLocation?.coordinate {
                     frameRegionAroundUser(coord)
@@ -137,7 +197,9 @@ struct MapView: View {
             // Linear animation avoids the ease-in lag that causes stickiness when updates
             // arrive faster than the animation duration.
             .onChange(of: location.heading) { _, newHeading in
-                guard headingModeEnabled, let heading = newHeading else { return }
+                // Suppress heading updates while the user has panned away or a detail sheet is open.
+                guard headingModeEnabled, snapBackTask == nil, selectedAircraft == nil else { return }
+                guard let heading = newHeading else { return }
                 // Skip if change is less than 4° — smooths out sensor noise beyond CLLocationManager's 2° filter.
                 guard headingDelta(heading.trueHeading, lastAppliedHeading) >= 4 else { return }
                 lastAppliedHeading = heading.trueHeading
@@ -145,7 +207,7 @@ struct MapView: View {
                     withAnimation(.linear(duration: 0.1)) {
                         cameraPosition = .camera(MapCamera(
                             centerCoordinate: userCoord,
-                            distance: currentCameraDistance,
+                            distance: cam.distance,
                             heading: heading.trueHeading,
                             pitch: 0
                         ))
@@ -173,7 +235,47 @@ struct MapView: View {
             .onChange(of: dataStore.aircraft) { _, _ in
                 resolveDeepLink()
             }
-        }
+            // When the detail sheet is dismissed, re-center the map on the aircraft
+            // so it sits at the true screen center (undoes the sheet-open shift).
+            .onChange(of: selectedAircraft) { _, newValue in
+                guard newValue == nil else { return }
+                guard let id = lastSheetAircraftID else { return }
+                let coord = dataStore.aircraft.first(where: { $0.id == id })?.coordinate
+                let span = sheetSpan ?? cam.region?.span
+                if let coord, let span {
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        cameraPosition = .region(MKCoordinateRegion(center: coord, span: span))
+                    }
+                }
+                lastSheetAircraftID = nil
+                sheetSpan = nil
+                // In heading mode, return to user position after 5 s.
+                if headingModeEnabled { scheduleSnapBack() }
+            }
+            // While a detail sheet is open, follow the aircraft at 30 fps using the same
+            // interpolation as the annotation so the camera and plane move in perfect sync.
+            // The task is keyed on lastSheetAircraftID — SwiftUI cancels it automatically
+            // when the sheet closes (id → nil) and restarts it for a new selection.
+            .task(id: lastSheetAircraftID) {
+                guard let id = lastSheetAircraftID,
+                      let span = sheetSpan ?? cam.region?.span else { return }
+                // Wait for the opening-shift animation (0.4 s) to settle before taking over.
+                try? await Task.sleep(nanoseconds: 400_000_000)
+                while !Task.isCancelled {
+                    guard let aircraft = dataStore.aircraft.first(where: { $0.id == id }) else { break }
+                    let elapsed = Date().timeIntervalSince(aircraft.lastUpdate)
+                    let interpolated = aircraft.interpolated(by: elapsed)
+                    let shifted = CLLocationCoordinate2D(
+                        latitude: interpolated.coordinate.latitude - span.latitudeDelta * 0.28,
+                        longitude: interpolated.coordinate.longitude
+                    )
+                    // Direct assignment without animation — 30 tiny steps/s looks smooth (like video).
+                    cameraPosition = .region(MKCoordinateRegion(center: shifted, span: span))
+                    try? await Task.sleep(nanoseconds: 33_333_333) // ~30 fps
+                }
+            }
+            } // NavigationStack
+        } // TimelineView
     }
 
     /// Tries to match `navigation.pendingDeepLinkCallsign` against the current aircraft list.
@@ -191,63 +293,91 @@ struct MapView: View {
             return
         }
 
-        withAnimation(.easeInOut(duration: 0.4)) {
-            cameraPosition = .region(MKCoordinateRegion(
-                center: match.coordinate,
-                latitudinalMeters: 15_000,
-                longitudinalMeters: 15_000
-            ))
-        }
+        sheetSpan = cam.region?.span ?? MKCoordinateSpan(latitudeDelta: 0.135, longitudeDelta: 0.135)
+        shiftCameraForSheet(to: match.coordinate)
+        lastSheetAircraftID = match.id
         selectedAircraft = match
         navigation.pendingDeepLinkCallsign = nil
     }
 
-    /// Tappable pill: toggles between "show full search radius" and the user's previous zoom.
-    private var radiusPillButton: some View {
-        Button {
-            toggleRadiusView()
-        } label: {
-            HStack(spacing: 8) {
-                Image(systemName: isRadiusModeActive ? "arrow.up.left.and.arrow.down.right" : "scope")
-                    .foregroundStyle(Color.accentColor)
-                Text("\(dataStore.aircraft.count) in radius")
-                    .font(.caption.bold())
+    /// Floating radius panel — always visible above the tab bar.
+    private var radiusSliderPanel: some View {
+        @Bindable var s = settings
+        return VStack(spacing: 0) {
+            HStack(alignment: .firstTextBaseline) {
+                Text("Search Radius")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(.secondary)
+                    .textCase(.uppercase)
+                    .kerning(0.4)
+                Spacer()
+                Text(radiusLabel)
+                    .font(.system(size: 15, weight: .semibold))
+                    .monospacedDigit()
                     .foregroundStyle(.primary)
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .background(.thinMaterial, in: .capsule)
+            .padding(.bottom, 6)
+
+            Slider(value: $s.radiusValue, in: 5...250, step: 5)
+                .tint(Color.accentColor)
+
+            HStack {
+                HStack(spacing: 7) {
+                    Circle()
+                        .fill(Color.green)
+                        .frame(width: 7, height: 7)
+                    Text("\(dataStore.aircraft.count) aircraft nearby")
+                        .font(.system(size: 14, weight: .semibold))
+                        .monospacedDigit()
+                }
+                Spacer()
+                Text(nextUpdateLabel)
+                    .font(.system(size: 11))
+                    .foregroundStyle(.secondary)
+            }
+            .padding(.top, 10)
         }
-        .buttonStyle(.plain)
-        .accessibilityLabel(isRadiusModeActive ? "Restore previous zoom" : "Show full search radius")
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .shadow(color: .black.opacity(0.12), radius: 10, y: 1)
+        .padding(.horizontal, 16)
     }
 
-    /// Map style selector menu button.
+    private var radiusLabel: String {
+        "\(Int(settings.radiusValue)) \(settings.distanceUnit.shortLabel)"
+    }
+
+    private var nextUpdateLabel: String {
+        guard let last = dataStore.lastFetchAt else { return "Updating…" }
+        let interval = Double(settings.refreshInterval.rawValue)
+        let next = last.addingTimeInterval(interval)
+        let remaining = next.timeIntervalSinceNow
+        if remaining <= 0 { return "Updating…" }
+        if remaining < 60 { return "Next update in \(Int(remaining)) s" }
+        return "Next update in \(Int(remaining / 60)) min"
+    }
+
+    private var stackButtonStyle: some View { EmptyView() }
+
+    /// Map style cycle button (part of right-side stack).
     private var mapStyleButton: some View {
-        Menu {
-            Button {
-                settings.mapStyle = .standard
-            } label: {
-                Label("Standard", systemImage: "map")
-            }
-            Button {
-                settings.mapStyle = .satellite
-            } label: {
-                Label("Satellit", systemImage: "globe")
-            }
-            Button {
-                settings.mapStyle = .hybrid
-            } label: {
-                Label("Hybrid", systemImage: "map.fill")
+        Button {
+            switch settings.mapStyle {
+            case .standard: settings.mapStyle = .hybrid
+            case .hybrid:   settings.mapStyle = .satellite
+            case .satellite: settings.mapStyle = .standard
             }
         } label: {
-            Image(systemName: "map")
-                .padding(10)
-                .background(.thinMaterial, in: .circle)
+            Image(systemName: mapIconForStyle(settings.mapStyle))
+                .font(.system(size: 17))
+                .foregroundStyle(Color.accentColor)
+                .frame(width: 44, height: 44)
         }
+        .buttonStyle(.plain)
     }
 
-    /// Heading mode button - toggles compass-relative map rotation.
+    /// Heading mode button (part of right-side stack).
     private var headingModeButton: some View {
         Button {
             headingModeEnabled.toggle()
@@ -255,41 +385,72 @@ struct MapView: View {
                 location.startUpdatingHeading()
             } else {
                 location.stopUpdatingHeading()
+                cancelSnapBack()
             }
         } label: {
             Image(systemName: headingModeEnabled ? "location.north.line.fill" : "location.north.line")
-                .foregroundStyle(headingModeEnabled ? .blue : .gray)
-                .padding(10)
-                .background(.thinMaterial, in: .circle)
+                .font(.system(size: 19))
+                .foregroundStyle(headingModeEnabled ? .white : Color.accentColor)
+                .frame(width: 44, height: 40)
+                .background(headingModeEnabled ? Color.accentColor : Color.clear)
         }
+        .buttonStyle(.plain)
         .accessibilityLabel("Heading mode")
+    }
+
+    /// Fit radius button (part of right-side stack).
+    private var fitRadiusButton: some View {
+        Button {
+            if let coord = location.currentLocation?.coordinate {
+                frameRegionAroundUser(coord)
+            }
+        } label: {
+            Image(systemName: "scope")
+                .font(.system(size: 19))
+                .foregroundStyle(Color.accentColor)
+                .frame(width: 44, height: 40)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Fit radius to screen")
     }
 
     private func mapIconForStyle(_ style: MapStyleOption) -> String {
         switch style {
         case .standard: return "map"
         case .satellite: return "square.on.circle"
-        case .hybrid: return "map.circle.fill"
+        case .hybrid: return "map.fill"
         }
     }
 
-    private func toggleRadiusView() {
-        if isRadiusModeActive {
-            // Restore the user's previous view.
-            if let saved = preToggleRegion {
-                withAnimation(.easeInOut(duration: 0.4)) {
-                    cameraPosition = .region(saved)
+    /// Starts (or restarts) the 5-second countdown to snap back to the user's position.
+    /// While the task is alive, heading-mode camera updates are suppressed so the user
+    /// can freely inspect the map without the camera fighting them.
+    private func scheduleSnapBack() {
+        snapBackTask?.cancel()
+        snapBackTask = Task {
+            try? await Task.sleep(for: .seconds(5))
+            guard !Task.isCancelled, headingModeEnabled else {
+                snapBackTask = nil
+                return
+            }
+            if let coord = location.currentLocation?.coordinate {
+                let heading = location.heading?.trueHeading ?? cam.heading
+                withAnimation(.easeInOut(duration: 0.6)) {
+                    cameraPosition = .camera(MapCamera(
+                        centerCoordinate: coord,
+                        distance: cam.distance,
+                        heading: heading,
+                        pitch: 0
+                    ))
                 }
             }
-            isRadiusModeActive = false
-        } else {
-            // Snapshot current view, then zoom out to show the entire search radius.
-            preToggleRegion = currentVisibleRegion
-            if let coord = location.currentLocation?.coordinate {
-                frameRegionAroundUser(coord)
-            }
-            isRadiusModeActive = true
+            snapBackTask = nil
         }
+    }
+
+    private func cancelSnapBack() {
+        snapBackTask?.cancel()
+        snapBackTask = nil
     }
 
     private func frameRegionAroundUser(_ coord: CLLocationCoordinate2D) {
@@ -310,6 +471,22 @@ struct MapView: View {
         if d > 180 { d -= 360 }
         if d < -180 { d += 360 }
         return abs(d)
+    }
+
+    /// Shifts the map camera south so `coordinate` appears centered in the visible map area
+    /// above a medium-detent sheet. Uses MKCoordinateRegion(center:span:) so the span object
+    /// is reused verbatim — MapKit cannot reinterpret it as a different zoom level.
+    /// The 0.28 shift factor: (map_center − top_half_center) / map_height ≈ 0.28 for typical iPhones.
+    private func shiftCameraForSheet(to coordinate: CLLocationCoordinate2D) {
+        // Use the live span from continuous tracking; fall back to ~15 km for cold launch.
+        let span = cam.region?.span ?? MKCoordinateSpan(latitudeDelta: 0.135, longitudeDelta: 0.135)
+        let shiftedCenter = CLLocationCoordinate2D(
+            latitude: coordinate.latitude - span.latitudeDelta * 0.28,
+            longitude: coordinate.longitude
+        )
+        withAnimation(.easeInOut(duration: 0.4)) {
+            cameraPosition = .region(MKCoordinateRegion(center: shiftedCenter, span: span))
+        }
     }
 
     private var mapStyleForSelection: MapStyle {

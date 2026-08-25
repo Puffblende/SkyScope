@@ -2,10 +2,18 @@ import SwiftUI
 
 /// Help & FAQ — pushed from Settings. Matches the design layout with grouped FAQ sections.
 struct HelpView: View {
-    @Environment(\.dismiss) private var dismiss
+    @State private var showFeedback = false
 
     var body: some View {
         List {
+            Section {
+                Text("Common questions about SkyScope.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+            }
+
             Section("Setup") {
                 FAQItem(
                     q: "Why does SkyScope need my location?",
@@ -65,9 +73,35 @@ struct HelpView: View {
                     a: "Send it through the Feedback form — we read every message."
                 )
             }
+
+            Section {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("Didn't find your answer?")
+                        .font(.headline)
+                        .foregroundStyle(.primary)
+                    Text("Tell us what's wrong or what you'd like to see.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    Button {
+                        showFeedback = true
+                    } label: {
+                        Text("Send Feedback")
+                            .font(.body.bold())
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 12)
+                            .background(Color.accentColor, in: RoundedRectangle(cornerRadius: 10))
+                            .foregroundStyle(.white)
+                    }
+                    .buttonStyle(.plain)
+                }
+                .padding(.vertical, 6)
+            }
         }
         .navigationTitle("Help & FAQ")
         .navigationBarTitleDisplayMode(.large)
+        .sheet(isPresented: $showFeedback) {
+            FeedbackView()
+        }
     }
 }
 

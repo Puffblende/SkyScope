@@ -92,44 +92,6 @@ struct FlightAwareService: AircraftDataProvider {
     }
 }
 
-// MARK: - Route enrichment
-
-extension FlightAwareService {
-    /// Fetches origin/destination airports for a given callsign via AeroAPI /flights/{ident}.
-    /// Used by LiveActivityManager to populate the progress bar; returns nil on any failure.
-    func fetchRoute(for callsign: String) async -> (origin: String, destination: String)? {
-        guard !apiKey.isEmpty, !callsign.isEmpty else { return nil }
-        let url = baseURL.appendingPathComponent("flights/\(callsign)")
-        var components = URLComponents(url: url, resolvingAgainstBaseURL: false)!
-        components.queryItems = [URLQueryItem(name: "max_pages", value: "1")]
-        guard let finalURL = components.url else { return nil }
-
-        var request = URLRequest(url: finalURL)
-        request.timeoutInterval = 10
-        request.setValue(apiKey, forHTTPHeaderField: "x-apikey")
-        request.setValue("application/json", forHTTPHeaderField: "Accept")
-
-        guard let (data, response) = try? await session.data(for: request),
-              let http = response as? HTTPURLResponse,
-              (200..<300).contains(http.statusCode) else { return nil }
-
-        guard let decoded = try? JSONDecoder.aeroAPI.decode(FAFlightsResponse.self, from: data),
-              let flight = decoded.flights.first,
-              let origin = flight.origin?.code,
-              let dest = flight.destination?.code else { return nil }
-
-        return (origin, dest)
-    }
-}
-
-private struct FAFlightsResponse: Decodable {
-    let flights: [FAFlight]
-    struct FAFlight: Decodable {
-        let origin: AirportRef?
-        let destination: AirportRef?
-    }
-}
-
 // MARK: - Wire format
 
 private struct FlightAwareResponse: Decodable {
