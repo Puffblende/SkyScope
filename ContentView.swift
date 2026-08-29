@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import UIKit
+import CoreLocation
 
 /// Root container. Uses a custom floating pill tab bar so the map can extend full-screen
 /// while the bar floats above the content on all tabs.
@@ -8,6 +9,7 @@ struct ContentView: View {
     @Environment(NavigationCoordinator.self) private var navigation
     @Environment(AircraftDataStore.self) private var dataStore
     @Environment(FollowStore.self) private var follow
+    @Environment(LocationService.self) private var location
     @Query private var favorites: [Favorite]
 
     var body: some View {
@@ -52,6 +54,12 @@ struct ContentView: View {
         }
         .onAppear {
             dataStore.cachedFavorites = favorites
+        }
+        .onChange(of: location.currentLocation) { _, newLoc in
+            LiveActivityManager.shared.currentUserLocation = newLoc?.coordinate
+        }
+        .onChange(of: dataStore.aircraft) { _, aircraft in
+            LiveActivityManager.shared.currentTotalCount = aircraft.count
         }
         .onChange(of: follow.followedId) { _, _ in
             guard LiveActivityManager.shared.isRunning else { return }

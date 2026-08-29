@@ -20,6 +20,11 @@ final class LiveActivityManager {
     private(set) var isRunning = false
     private var liveActivity: Activity<SkyScopeActivityAttributes>?
 
+    /// Set by ContentView whenever a new GPS fix arrives.
+    var currentUserLocation: CLLocationCoordinate2D?
+    /// Set by ContentView whenever the aircraft list refreshes.
+    var currentTotalCount: Int = 0
+
     private init() {}
 
     // MARK: - Lifecycle
@@ -50,7 +55,7 @@ final class LiveActivityManager {
         do {
             let activity = try Activity<SkyScopeActivityAttributes>.request(
                 attributes: attributes,
-                contentState: initialState,
+                content: .init(state: initialState, staleDate: Date.now.addingTimeInterval(5 * 60)),
                 pushType: nil
             )
             self.liveActivity = activity
@@ -86,7 +91,7 @@ final class LiveActivityManager {
         }
 
         let newState = await makeState(from: aircraft)
-        await activity.update(ActivityContent(state: newState, staleDate: nil))
+        await activity.update(ActivityContent(state: newState, staleDate: Date.now.addingTimeInterval(5 * 60)))
         print("[LAM] Updated → \(aircraft.displayName)")
     }
 
@@ -105,6 +110,24 @@ final class LiveActivityManager {
             progress = nil
         }
 
+        // Proximity data — only available when we have a GPS fix.
+        let distNM: Double?
+        let bearing: Int?
+        let minsToClosest: Int?
+        if let userCoord = currentUserLocation {
+            let userLoc = CLLocation(latitude: userCoord.latitude, longitude: userCoord.longitude)
+            let acLoc  = CLLocation(latitude: aircraft.coordinate.latitude, longitude: aircraft.coordinate.longitude)
+            distNM = userLoc.distance(from: acLoc) / 1_852
+            bearing = Int(bearingDeg(from: userCoord, to: aircraft.coordinate))
+            minsToClosest = closestApproachMinutes(aircraft: aircraft, userCoord: userCoord)
+        } else {
+            distNM = nil
+            bearing = nil
+            minsToClosest = nil
+        }
+
+        let settings = SettingsStore.shared
+
         return SkyScopeActivityAttributes.ContentValues(
             callsign: aircraft.displayName,
             altitude: formatAltitude(aircraft.altitudeMeters),
@@ -118,8 +141,48 @@ final class LiveActivityManager {
             destination: destination,
             progress: progress,
             squawk: aircraft.squawk,
-            updateTime: .now
+            updateTime: .now,
+            compactStyle: settings.dynamicIslandCompactStyle.rawValue,
+            lockScreenStyle: settings.lockScreenLayoutStyle.rawValue,
+            distanceNM: distNM,
+            minutesToClosest: minsToClosest,
+            bearingDeg: bearing,
+            totalNearbyCount: currentTotalCount
         )
+    }
+
+    // MARK: - Proximity helpers
+
+    private func bearingDeg(from: CLLocationCoordinate2D, to: CLLocationCoordinate2D) -> Double {
+        let lat1 = from.latitude  * .pi / 180
+        let lat2 = to.latitude    * .pi / 180
+        let dLon = (to.longitude - from.longitude) * .pi / 180
+        let y = sin(dLon) * cos(lat2)
+        let x = cos(lat1) * sin(lat2) - sin(lat1) * cos(lat2) * cos(dLon)
+        return (atan2(y, x) * 180 / .pi + 360).truncatingRemainder(dividingBy: 360)
+    }
+
+    private func closestApproachMinutes(aircraft: Aircraft, userCoord: CLLocationCoordinate2D) -> Int? {
+        guard let speedMps = aircraft.groundSpeedMps, speedMps > 1,
+              let headingDeg = aircraft.headingDegrees else { return nil }
+
+        let latScale = 110_540.0
+        let lonScale = 111_320.0 * cos(userCoord.latitude * .pi / 180)
+
+        // Q = aircraft − user (meters, flat-earth approx valid for < 200 km)
+        let qx = (aircraft.coordinate.longitude - userCoord.longitude) * lonScale
+        let qy = (aircraft.coordinate.latitude  - userCoord.latitude)  * latScale
+
+        let rad = headingDeg * .pi / 180
+        let vx  = speedMps * sin(rad)
+        let vy  = speedMps * cos(rad)
+        let v2  = vx * vx + vy * vy
+        guard v2 > 0 else { return nil }
+
+        // t_min = -(Q · V) / |V|²  (negative because Q points away from user)
+        let tSec = -(qx * vx + qy * vy) / v2
+        guard tSec > 0 else { return 0 }  // already past closest point
+        return Int(tSec / 60)
     }
 
     private func calculateProgress(for aircraft: Aircraft, origin: String, destination: String) async -> Double {

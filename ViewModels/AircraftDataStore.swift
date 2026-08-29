@@ -9,6 +9,9 @@ import SwiftData
 @MainActor
 @Observable
 final class AircraftDataStore {
+    /// Set by SkyScopeApp.init() so AppDelegate's BGTask handler can call refresh().
+    static weak var shared: AircraftDataStore?
+
     private(set) var aircraft: [Aircraft] = []
     private(set) var isLoading: Bool = false
     private(set) var lastFetchAt: Date?

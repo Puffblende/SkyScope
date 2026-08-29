@@ -438,7 +438,7 @@ private struct FavoritesIllustration: View {
 
 // MARK: - Hex colour helper
 
-private extension Color {
+extension Color {
     init(hex: String) {
         let str = hex.trimmingCharacters(in: .alphanumerics.inverted)
         var value: UInt64 = 0

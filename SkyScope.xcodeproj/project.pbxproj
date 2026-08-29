@@ -43,6 +43,8 @@
 		95B0EADA302F6CB2002EBF33 /* AirportDetailService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95B0EAD9302F6CB2002EBF33 /* AirportDetailService.swift */; };
 		95B0EADC302F6CB6002EBF33 /* SafariView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95B0EADB302F6CB6002EBF33 /* SafariView.swift */; };
 		95B0EADE302F6CE0002EBF33 /* AirportCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95B0EADD302F6CE0002EBF33 /* AirportCardView.swift */; };
+		95B0EAE0303E41EE002EBF33 /* WeatherService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95B0EADF303E41EE002EBF33 /* WeatherService.swift */; };
+		95B0EAE2303E425D002EBF33 /* WeatherOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95B0EAE1303E425D002EBF33 /* WeatherOverlayView.swift */; };
 		95B452FC2FD609550059921E /* AirportCoordinatesService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95B452FB2FD609520059921E /* AirportCoordinatesService.swift */; };
 		95FB72222FC799DA00FA9D48 /* SkyScopeActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95FB72202FC799DA00FA9D48 /* SkyScopeActivityAttributes.swift */; };
 		95FB72622FC8679900FA9D48 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 95FB722A2FC7A0F600FA9D48 /* WidgetKit.framework */; };
@@ -117,6 +119,8 @@
 		95B0EAD9302F6CB2002EBF33 /* AirportDetailService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirportDetailService.swift; sourceTree = "<group>"; };
 		95B0EADB302F6CB6002EBF33 /* SafariView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafariView.swift; sourceTree = "<group>"; };
 		95B0EADD302F6CE0002EBF33 /* AirportCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirportCardView.swift; sourceTree = "<group>"; };
+		95B0EADF303E41EE002EBF33 /* WeatherService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherService.swift; sourceTree = "<group>"; };
+		95B0EAE1303E425D002EBF33 /* WeatherOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherOverlayView.swift; sourceTree = "<group>"; };
 		95B452FB2FD609520059921E /* AirportCoordinatesService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirportCoordinatesService.swift; sourceTree = "<group>"; };
 		95FB72202FC799DA00FA9D48 /* SkyScopeActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkyScopeActivityAttributes.swift; sourceTree = "<group>"; };
 		95FB72232FC79CBC00FA9D48 /* SkyScope.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SkyScope.entitlements; sourceTree = "<group>"; };
@@ -225,6 +229,7 @@
 				956D58172FC3A8CE00E2503F /* APIRouter.swift */,
 				95B0EAC1302D2977002EBF33 /* AirplanesLiveService.swift */,
 				95B0EAD9302F6CB2002EBF33 /* AirportDetailService.swift */,
+				95B0EADF303E41EE002EBF33 /* WeatherService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -265,6 +270,7 @@
 				95B0EAC3302D2E77002EBF33 /* AircraftPhotoView.swift */,
 				95B0EADB302F6CB6002EBF33 /* SafariView.swift */,
 				95B0EADD302F6CE0002EBF33 /* AirportCardView.swift */,
+				95B0EAE1303E425D002EBF33 /* WeatherOverlayView.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -414,6 +420,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				95B0EAE2303E425D002EBF33 /* WeatherOverlayView.swift in Sources */,
 				956D581D2FC3A8FC00E2503F /* ContentView.swift in Sources */,
 				956D581B2FC3A8F300E2503F /* SkyScopeApp.swift in Sources */,
 				95A084262FC8FBE7003034F6 /* LiveActivityManager.swift in Sources */,
@@ -449,6 +456,7 @@
 				956D583B2FC508A000E2503F /* AdsbdbService.swift in Sources */,
 				AAC18553E2C74252BA819A5F /* AppDelegate.swift in Sources */,
 				95B0EAC6302E7A10002EBF33 /* DebugStore.swift in Sources */,
+				95B0EAE0303E41EE002EBF33 /* WeatherService.swift in Sources */,
 				95B0EADC302F6CB6002EBF33 /* SafariView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

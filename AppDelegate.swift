@@ -1,3 +1,4 @@
+import BackgroundTasks
 import FirebaseCore
 import FirebaseInstallations
 import FirebaseMessaging
@@ -16,6 +17,23 @@ final class AppDelegate: NSObject,
 
         UNUserNotificationCenter.current().delegate = self
         Messaging.messaging().delegate = self
+
+        // Register the background refresh task that keeps the Live Activity current
+        // while the app is suspended. iOS calls this at most every ~15 minutes.
+        BGTaskScheduler.shared.register(
+            forTaskWithIdentifier: "com.skyscope.bgrefresh",
+            using: nil
+        ) { task in
+            task.expirationHandler = { task.setTaskCompleted(success: false) }
+            Task { @MainActor in
+                if LiveActivityManager.shared.isRunning {
+                    await AircraftDataStore.shared?.refresh()
+                }
+                task.setTaskCompleted(success: true)
+                AppDelegate.scheduleBackgroundRefresh()
+            }
+        }
+        AppDelegate.scheduleBackgroundRefresh()
 
         // Don't request permission here — onboarding handles the first-launch dialog.
         // On subsequent launches, if permission was already granted, re-register so
@@ -72,5 +90,13 @@ final class AppDelegate: NSObject,
         _ center: UNUserNotificationCenter,
         didReceive response: UNNotificationResponse
     ) async {
+    }
+
+    // MARK: - Background refresh scheduling
+
+    static func scheduleBackgroundRefresh() {
+        let request = BGAppRefreshTaskRequest(identifier: "com.skyscope.bgrefresh")
+        request.earliestBeginDate = Date(timeIntervalSinceNow: 15 * 60)
+        try? BGTaskScheduler.shared.submit(request)
     }
 }

@@ -22,7 +22,9 @@ struct SkyScopeApp: App {
         _location = State(initialValue: location)
         _router = State(initialValue: router)
         _follow = State(initialValue: follow)
-        _dataStore = State(initialValue: AircraftDataStore(router: router, settings: settings, location: location, follow: follow))
+        let dataStore = AircraftDataStore(router: router, settings: settings, location: location, follow: follow)
+        AircraftDataStore.shared = dataStore
+        _dataStore = State(initialValue: dataStore)
 
         let authInfo = ActivityAuthorizationInfo()
         print("[STARTUP] areActivitiesEnabled: \(authInfo.areActivitiesEnabled)")

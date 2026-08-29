@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import UIKit
 
 /// Unit preference for altitude.
 enum AltitudeUnit: String, CaseIterable, Identifiable, Codable {
@@ -115,6 +116,53 @@ enum AppColorScheme: String, CaseIterable, Identifiable, Codable {
     }
 }
 
+/// Which data pair to show in the Dynamic Island compact slot.
+enum DynamicIslandCompactStyle: String, CaseIterable, Identifiable, Codable {
+    case flightAndAltitude
+    case proximity
+    case approachCountdown
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .flightAndAltitude:  "Flight & Altitude"
+        case .proximity:          "Proximity"
+        case .approachCountdown:  "Approach Countdown"
+        }
+    }
+
+    var subtitle: String {
+        switch self {
+        case .flightAndAltitude:  "Identifies the aircraft and its level at a glance"
+        case .proximity:          "Answers \"is it near me yet?\" — the reason to glance at all"
+        case .approachCountdown:  "Closest point of approach, so you know when to look up"
+        }
+    }
+}
+
+/// Which layout to use for the lock-screen Live Activity banner.
+enum LockScreenLayoutStyle: String, CaseIterable, Identifiable, Codable {
+    case telemetry
+    case radar
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .telemetry: "Telemetry"
+        case .radar:     "Radar"
+        }
+    }
+
+    var subtitle: String {
+        switch self {
+        case .telemetry: "ALT · SPD · HDG · SQK readout"
+        case .radar:     "Scope view with distance and bearing"
+        }
+    }
+}
+
 /// Aircraft annotation badge style on the map.
 enum BadgeStyle: String, CaseIterable, Identifiable, Codable {
     case solid
@@ -162,6 +210,9 @@ final class SettingsStore {
         static let colorScheme = "settings.appearance.colorScheme"
         static let mapStyle = "settings.appearance.mapStyle"
         static let badgeStyle = "settings.appearance.badgeStyle"
+        static let dynamicIslandStyle = "settings.liveActivity.diStyle"
+        static let lockScreenStyle    = "settings.liveActivity.lockScreenStyle"
+        static let coneColorHex       = "settings.appearance.coneColorHex"
     }
 
     @ObservationIgnored private let defaults: UserDefaults
@@ -210,6 +261,23 @@ final class SettingsStore {
         didSet { defaults.set(badgeStyle.rawValue, forKey: Keys.badgeStyle) }
     }
 
+    var dynamicIslandCompactStyle: DynamicIslandCompactStyle {
+        didSet { defaults.set(dynamicIslandCompactStyle.rawValue, forKey: Keys.dynamicIslandStyle) }
+    }
+
+    var lockScreenLayoutStyle: LockScreenLayoutStyle {
+        didSet { defaults.set(lockScreenLayoutStyle.rawValue, forKey: Keys.lockScreenStyle) }
+    }
+
+    var coneColorHex: String {
+        didSet { defaults.set(coneColorHex, forKey: Keys.coneColorHex) }
+    }
+
+    var coneColor: Color {
+        get { Color(hex: coneColorHex) }
+        set { coneColorHex = UIColor(newValue).hexString }
+    }
+
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
 
@@ -224,6 +292,11 @@ final class SettingsStore {
         self.colorScheme = AppColorScheme(rawValue: defaults.string(forKey: Keys.colorScheme) ?? "") ?? .system
         self.mapStyle = MapStyleOption(rawValue: defaults.string(forKey: Keys.mapStyle) ?? "") ?? .standard
         self.badgeStyle = BadgeStyle(rawValue: defaults.string(forKey: Keys.badgeStyle) ?? "") ?? .solid
+        self.dynamicIslandCompactStyle = DynamicIslandCompactStyle(
+            rawValue: defaults.string(forKey: Keys.dynamicIslandStyle) ?? "") ?? .flightAndAltitude
+        self.lockScreenLayoutStyle = LockScreenLayoutStyle(
+            rawValue: defaults.string(forKey: Keys.lockScreenStyle) ?? "") ?? .telemetry
+        self.coneColorHex = defaults.string(forKey: Keys.coneColorHex) ?? "#FFFFFF"
     }
 
     /// Radius converted to meters for API queries and map overlay rendering.
@@ -232,6 +305,19 @@ final class SettingsStore {
         case .kilometers: return radiusValue * 1_000
         case .nauticalMiles: return radiusValue * 1_852
         }
+    }
+}
+
+// MARK: - Color hex helpers
+
+extension UIColor {
+    var hexString: String {
+        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        getRed(&r, green: &g, blue: &b, alpha: &a)
+        return String(format: "#%02X%02X%02X",
+                      Int((r * 255).rounded()),
+                      Int((g * 255).rounded()),
+                      Int((b * 255).rounded()))
     }
 }
 

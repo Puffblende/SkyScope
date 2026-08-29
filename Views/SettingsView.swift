@@ -43,7 +43,10 @@ struct SettingsView: View {
                         ) { settings.badgeStyle = .outline }
                     }
                     .padding(.horizontal, 16)
-                    .padding(.bottom, 24)
+                    .padding(.bottom, 12)
+
+                    ConeColorCard(settings: settings)
+                        .padding(.bottom, 24)
 
                     // MARK: Units
                     SectionHeader(title: "Units")
@@ -178,6 +181,38 @@ struct SettingsView: View {
                         }
                         .buttonStyle(.plain)
                     }
+
+                    // MARK: Dynamic Island Style
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Dynamic Island pairing")
+                            .font(.system(size: 13))
+                            .foregroundStyle(.secondary)
+                            .padding(.horizontal, 4)
+                        ForEach(DynamicIslandCompactStyle.allCases) { style in
+                            DICompactStyleCard(
+                                style: style,
+                                isSelected: settings.dynamicIslandCompactStyle == style
+                            ) { settings.dynamicIslandCompactStyle = style }
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 16)
+                    .padding(.bottom, 12)
+
+                    // MARK: Lock Screen Layout
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Lock screen layout")
+                            .font(.system(size: 13))
+                            .foregroundStyle(.secondary)
+                            .padding(.horizontal, 4)
+                        ForEach(LockScreenLayoutStyle.allCases) { style in
+                            LockScreenStyleCard(
+                                style: style,
+                                isSelected: settings.lockScreenLayoutStyle == style
+                            ) { settings.lockScreenLayoutStyle = style }
+                        }
+                    }
+                    .padding(.horizontal, 16)
                     .padding(.bottom, 24)
 
                     // MARK: OpenSky Credentials
@@ -587,6 +622,198 @@ private struct OutlinePreviewShape: Shape {
     }
 }
 
+// MARK: - Dynamic Island compact style picker
+
+private struct DICompactStyleCard: View {
+    let style: DynamicIslandCompactStyle
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 12) {
+                DICompactPreview(style: style)
+                    .frame(width: 148, height: 32)
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(style.label)
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundStyle(.primary)
+                    Text(style.subtitle)
+                        .font(.system(size: 12))
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                Spacer(minLength: 0)
+
+                ZStack {
+                    Circle()
+                        .strokeBorder(isSelected ? Color.accentColor : Color(.tertiaryLabel), lineWidth: 1.5)
+                        .frame(width: 22, height: 22)
+                    if isSelected {
+                        Circle().fill(Color.accentColor).frame(width: 22, height: 22)
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundStyle(.white)
+                    }
+                }
+            }
+            .padding(14)
+            .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 14))
+            .overlay(RoundedRectangle(cornerRadius: 14).stroke(isSelected ? Color.accentColor : Color.clear, lineWidth: 2))
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+/// Mini Dynamic Island pill preview shown inside the card.
+private struct DICompactPreview: View {
+    let style: DynamicIslandCompactStyle
+
+    var body: some View {
+        HStack(spacing: 0) {
+            HStack(spacing: 3) {
+                Image(systemName: "airplane")
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundStyle(.blue)
+                Text(style == .flightAndAltitude ? "LH2312" : "D-AIZG")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(.white)
+            }
+            .padding(.leading, 10)
+
+            Spacer()
+
+            trailingLabel
+                .padding(.trailing, 10)
+        }
+        .padding(.vertical, 5)
+        .background(.black, in: Capsule())
+    }
+
+    @ViewBuilder
+    private var trailingLabel: some View {
+        switch style {
+        case .flightAndAltitude:
+            Text("34,000 ft")
+                .font(.system(size: 10, weight: .semibold, design: .monospaced))
+                .foregroundStyle(.blue)
+        case .proximity:
+            HStack(spacing: 2) {
+                Text("26.7")
+                    .font(.system(size: 10, weight: .semibold, design: .monospaced))
+                    .foregroundStyle(.blue)
+                Text("NM")
+                    .font(.system(size: 8, weight: .bold))
+                    .foregroundStyle(Color(.secondaryLabel))
+            }
+        case .approachCountdown:
+            HStack(spacing: 3) {
+                Image(systemName: "scope")
+                    .font(.system(size: 9))
+                    .foregroundStyle(.green)
+                Text("4 min")
+                    .font(.system(size: 10, weight: .semibold, design: .monospaced))
+                    .foregroundStyle(.green)
+            }
+        }
+    }
+}
+
+// MARK: - Lock screen layout picker
+
+private struct LockScreenStyleCard: View {
+    let style: LockScreenLayoutStyle
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 12) {
+                LockScreenMiniPreview(style: style)
+                    .frame(width: 72, height: 44)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(style.label)
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundStyle(.primary)
+                    Text(style.subtitle)
+                        .font(.system(size: 12))
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer(minLength: 0)
+
+                ZStack {
+                    Circle()
+                        .strokeBorder(isSelected ? Color.accentColor : Color(.tertiaryLabel), lineWidth: 1.5)
+                        .frame(width: 22, height: 22)
+                    if isSelected {
+                        Circle().fill(Color.accentColor).frame(width: 22, height: 22)
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundStyle(.white)
+                    }
+                }
+            }
+            .padding(14)
+            .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 14))
+            .overlay(RoundedRectangle(cornerRadius: 14).stroke(isSelected ? Color.accentColor : Color.clear, lineWidth: 2))
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+private struct LockScreenMiniPreview: View {
+    let style: LockScreenLayoutStyle
+
+    var body: some View {
+        ZStack {
+            Color.black
+            if style == .radar {
+                HStack(spacing: 4) {
+                    // Tiny radar
+                    ZStack {
+                        ForEach([1.0, 0.6], id: \.self) { s in
+                            Circle().stroke(.white.opacity(0.25), lineWidth: 0.5)
+                                .frame(width: 20 * s, height: 20 * s)
+                        }
+                        Circle().fill(.blue).frame(width: 3, height: 3)
+                        Image(systemName: "airplane").font(.system(size: 5)).foregroundStyle(.white)
+                            .offset(x: 5, y: -4)
+                    }
+                    .frame(width: 22, height: 22)
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text("D-AIZG").font(.system(size: 6, weight: .bold)).foregroundStyle(.white)
+                        Text("26.7 NM").font(.system(size: 5, design: .monospaced)).foregroundStyle(.blue)
+                        Text("036°").font(.system(size: 5, design: .monospaced)).foregroundStyle(.white)
+                    }
+                }
+            } else {
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack(spacing: 2) {
+                        Image(systemName: "airplane").font(.system(size: 5)).foregroundStyle(.blue)
+                        Text("LH2312").font(.system(size: 5, weight: .bold)).foregroundStyle(.white)
+                    }
+                    HStack(spacing: 4) {
+                        Text("ALT").font(.system(size: 4)).foregroundStyle(.secondary)
+                        Text("SPD").font(.system(size: 4)).foregroundStyle(.secondary)
+                        Text("HDG").font(.system(size: 4)).foregroundStyle(.secondary)
+                    }
+                    HStack(spacing: 4) {
+                        Text("34k ft").font(.system(size: 4, design: .monospaced)).foregroundStyle(.white)
+                        Text("452").font(.system(size: 4, design: .monospaced)).foregroundStyle(.white)
+                        Text("036°").font(.system(size: 4, design: .monospaced)).foregroundStyle(.white)
+                    }
+                }
+                .padding(4)
+            }
+        }
+    }
+}
+
 // MARK: - App Icon grid
 
 private struct AppIconGrid: View {
@@ -688,6 +915,79 @@ private struct AppIconPreview: View {
                     .fill(.white)
                     .frame(width: 26, height: 26)
                     .rotationEffect(.degrees(45))
+            }
+        }
+    }
+}
+
+// MARK: - Cone color picker card
+
+private struct ConeColorCard: View {
+    let settings: SettingsStore
+
+    private static let presets: [(hex: String, color: Color)] = [
+        ("#FFFFFF", .white),
+        ("#FFD60A", Color(hex: "#FFD60A")),
+        ("#5AC8FA", Color(hex: "#5AC8FA")),
+        ("#FF9500", Color(hex: "#FF9500")),
+        ("#30D158", Color(hex: "#30D158")),
+        ("#FF375F", Color(hex: "#FF375F")),
+    ]
+
+    private var isPresetSelected: Bool {
+        Self.presets.contains { $0.hex == settings.coneColorHex }
+    }
+
+    var body: some View {
+        GroupedCard {
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Direction cone color")
+                    .font(.system(size: 17))
+                    .padding(.horizontal, 16)
+                    .padding(.top, 14)
+
+                HStack(spacing: 12) {
+                    ForEach(Self.presets, id: \.hex) { preset in
+                        let isSelected = settings.coneColorHex == preset.hex
+                        Button {
+                            settings.coneColorHex = preset.hex
+                        } label: {
+                            Circle()
+                                .fill(preset.color)
+                                .frame(width: 28, height: 28)
+                                .overlay(
+                                    Circle().strokeBorder(
+                                        isSelected ? Color.accentColor : Color(.separator),
+                                        lineWidth: isSelected ? 2.5 : 1
+                                    )
+                                )
+                        }
+                        .buttonStyle(.plain)
+                    }
+
+                    Spacer()
+
+                    // Custom color picker — shows current color, opens system picker on tap
+                    ColorPicker(
+                        "",
+                        selection: Binding(
+                            get: { settings.coneColor },
+                            set: { settings.coneColor = $0 }
+                        ),
+                        supportsOpacity: false
+                    )
+                    .labelsHidden()
+                    .frame(width: 32, height: 32)
+                    .overlay(
+                        Circle().strokeBorder(
+                            isPresetSelected ? Color.clear : Color.accentColor,
+                            lineWidth: 2.5
+                        )
+                        .frame(width: 36, height: 36)
+                    )
+                }
+                .padding(.horizontal, 16)
+                .padding(.bottom, 14)
             }
         }
     }

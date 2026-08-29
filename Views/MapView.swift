@@ -31,6 +31,7 @@ struct MapView: View {
     // Map feature states
     @State private var headingModeEnabled = false
     @State private var lastAppliedHeading: Double = -999
+    @State private var compassHeading: Double = 0
 
     // Live camera state — updated continuously so tap-to-open always has the correct zoom.
     // Stored as a reference type so property mutations don't trigger view re-renders.
@@ -39,6 +40,11 @@ struct MapView: View {
     // Non-nil while we're waiting to snap back to the user after they panned away in heading mode.
     // Heading-mode camera updates are suppressed while this task is pending.
     @State private var snapBackTask: Task<Void, Never>?
+
+    // Weather overlay
+    @State private var showWeather = false
+    @State private var weather: WeatherData?
+    @State private var weatherLoading = false
 
     private var favoriteRegistrations: Set<String> {
         Set(favorites.map { $0.registration })
@@ -50,67 +56,81 @@ struct MapView: View {
     }
 
     var body: some View {
-        // TimelineView at 30 fps drives continuous re-renders so MapKit sees smoothly
-        // interpolated annotation coordinates — @Observable tracking inside
-        // @MapContentBuilder closures is unreliable and won't trigger updates on its own.
-        TimelineView(.periodic(from: .now, by: 1.0 / 30.0)) { context in
-            let interpolatedAircraft = dataStore.aircraft.map {
-                $0.interpolated(by: context.date.timeIntervalSince($0.lastUpdate))
-            }
-            NavigationStack {
-            Map(position: $cameraPosition) {
-                UserAnnotation()
-
-                if let userCoord = location.currentLocation?.coordinate {
-                    MapCircle(center: userCoord, radius: settings.radiusInMeters)
-                        .foregroundStyle(Color.accentColor.opacity(0.10))
-                        .stroke(Color.accentColor.opacity(0.6), lineWidth: 1.5)
+        NavigationStack {
+            // TimelineView at 30 fps drives continuous re-renders so MapKit sees smoothly
+            // interpolated annotation coordinates — @Observable tracking inside
+            // @MapContentBuilder closures is unreliable and won't trigger updates on its own.
+            TimelineView(.periodic(from: .now, by: 1.0 / 30.0)) { context in
+                let interpolatedAircraft = dataStore.aircraft.map {
+                    $0.interpolated(by: context.date.timeIntervalSince($0.lastUpdate))
                 }
+                Map(position: $cameraPosition) {
+                    if let userCoord = location.currentLocation?.coordinate {
+                        MapCircle(center: userCoord, radius: settings.radiusInMeters)
+                            .foregroundStyle(Color.accentColor.opacity(0.10))
+                            .stroke(Color.accentColor.opacity(0.6), lineWidth: 1.5)
 
-                ForEach(interpolatedAircraft) { aircraft in
-                    Annotation(
-                        aircraft.displayName,
-                        coordinate: aircraft.coordinate,
-                        anchor: .center
-                    ) {
-                        AircraftAnnotation(
-                            aircraft: aircraft,
-                            isFavorite: isFavorite(aircraft),
-                            isFollowed: follow.isFollowing(aircraft),
-                            isSelected: aircraft.id == selectedAircraft?.id,
-                            badgeStyle: settings.badgeStyle
-                        )
-                        .onTapGesture {
-                            cancelSnapBack()
-                            lastSheetAircraftID = aircraft.id
-                            selectedAircraft = aircraft
-                            sheetSpan = cam.region?.span ?? MKCoordinateSpan(latitudeDelta: 0.135, longitudeDelta: 0.135)
-                            shiftCameraForSheet(to: aircraft.coordinate)
+                        if !headingModeEnabled, location.heading != nil {
+                            Annotation("Heading cone", coordinate: userCoord, anchor: .center) {
+                                DirectionConeView(
+                                    angleDegrees: compassHeading - cam.heading,
+                                    color: settings.coneColor
+                                )
+                                .frame(width: 120, height: 120)
+                                .allowsHitTesting(false)
+                                .accessibilityHidden(true)
+                            }
                         }
                     }
-                }
 
-            }
-            .mapStyle(mapStyleForSelection)
-            .mapControls {
-                MapUserLocationButton()
-                MapCompass()
-                MapScaleView()
-            }
-            // Continuous tracking so cam is always current when a tap fires, even mid-gesture.
-            // Mutating class properties doesn't trigger SwiftUI re-renders.
-            .onMapCameraChange(frequency: .continuous) { context in
-                cam.region = context.region
-                cam.distance = context.camera.distance
-                cam.heading = context.camera.heading
-            }
-            // Detect user-initiated pan/zoom in heading mode → start snap-back countdown.
-            .simultaneousGesture(DragGesture(minimumDistance: 5).onChanged { _ in
-                if headingModeEnabled && selectedAircraft == nil { scheduleSnapBack() }
-            })
-            .simultaneousGesture(MagnifyGesture().onChanged { _ in
-                if headingModeEnabled && selectedAircraft == nil { scheduleSnapBack() }
-            })
+                    UserAnnotation()
+
+                    ForEach(interpolatedAircraft) { aircraft in
+                        Annotation(
+                            aircraft.displayName,
+                            coordinate: aircraft.coordinate,
+                            anchor: .center
+                        ) {
+                            AircraftAnnotation(
+                                aircraft: aircraft,
+                                isFavorite: isFavorite(aircraft),
+                                isFollowed: follow.isFollowing(aircraft),
+                                isSelected: aircraft.id == selectedAircraft?.id,
+                                badgeStyle: settings.badgeStyle
+                            )
+                            .onTapGesture {
+                                cancelSnapBack()
+                                lastSheetAircraftID = aircraft.id
+                                selectedAircraft = aircraft
+                                sheetSpan = cam.region?.span ?? MKCoordinateSpan(latitudeDelta: 0.135, longitudeDelta: 0.135)
+                                shiftCameraForSheet(to: aircraft.coordinate)
+                            }
+                        }
+                    }
+
+                }
+                .mapStyle(mapStyleForSelection)
+                .mapControls {
+                    MapUserLocationButton()
+                    MapCompass()
+                    MapScaleView()
+                }
+                // Continuous tracking so cam is always current when a tap fires, even mid-gesture.
+                // Mutating class properties doesn't trigger SwiftUI re-renders.
+                .onMapCameraChange(frequency: .continuous) { context in
+                    cam.region = context.region
+                    cam.distance = context.camera.distance
+                    cam.heading = context.camera.heading
+                }
+                // Detect user-initiated pan/zoom in heading mode → start snap-back countdown.
+                .simultaneousGesture(DragGesture(minimumDistance: 5).onChanged { _ in
+                    if headingModeEnabled && selectedAircraft == nil { scheduleSnapBack() }
+                })
+                .simultaneousGesture(MagnifyGesture().onChanged { _ in
+                    if headingModeEnabled && selectedAircraft == nil { scheduleSnapBack() }
+                })
+            } // TimelineView
+
             .navigationTitle("SkyScope")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -128,17 +148,24 @@ struct MapView: View {
                 }
             }
             .overlay(alignment: .top) {
-                if let error = dataStore.lastError ?? location.lastError {
-                    Text(error)
-                        .font(.caption)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 6)
-                        .background(.thinMaterial, in: .capsule)
-                        .padding(.top, 6)
+                VStack(spacing: 4) {
+                    if !headingModeEnabled, location.heading != nil {
+                        CompassStripView(heading: compassHeading)
+                            .transition(.opacity.combined(with: .move(edge: .top)))
+                    }
+                    if let error = dataStore.lastError ?? location.lastError {
+                        Text(error)
+                            .font(.caption)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(.thinMaterial, in: .capsule)
+                    }
                 }
+                .padding(.top, 6)
+                .animation(.easeInOut(duration: 0.3), value: headingModeEnabled)
             }
             .overlay(alignment: .bottom) {
-                radiusSliderPanel
+                RadiusSliderPanel()
                     .padding(.bottom, 16)
             }
             .overlay(alignment: .topTrailing) {
@@ -148,6 +175,8 @@ struct MapView: View {
                     headingModeButton
                     Divider().frame(width: 44)
                     fitRadiusButton
+                    Divider().frame(width: 44)
+                    weatherButton
                 }
                 .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
                 .shadow(color: .black.opacity(0.12), radius: 6, y: 1)
@@ -163,15 +192,34 @@ struct MapView: View {
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
             }
+            .sheet(isPresented: $showWeather) {
+                if weatherLoading {
+                    ProgressView("Fetching weather…")
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .presentationDetents([.medium])
+                } else if let w = weather {
+                    WeatherOverlayView(weather: w)
+                        .presentationDetents([.medium, .large])
+                        .presentationDragIndicator(.visible)
+                } else {
+                    ContentUnavailableView("Weather Unavailable", systemImage: "cloud.slash")
+                        .presentationDetents([.medium])
+                }
+            }
             // Frame to radius on every appear — tab switch, cold start.
             // Small delay lets MapKit complete its initial layout before we override the region.
             .onAppear {
+                location.startUpdatingHeading()
+                if let h = location.heading { compassHeading = h.trueHeading }
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
                     if let coord = location.currentLocation?.coordinate {
                         frameRegionAroundUser(coord)
                         hasAutoFramedOnFirstLoad = true
                     }
                 }
+            }
+            .onDisappear {
+                location.stopUpdatingHeading()
             }
             // Re-frame when coming back to the foreground.
             .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
@@ -197,6 +245,15 @@ struct MapView: View {
             // Linear animation avoids the ease-in lag that causes stickiness when updates
             // arrive faster than the animation duration.
             .onChange(of: location.heading) { _, newHeading in
+                // Static mode: accumulate heading via shortest-path delta so 0°/360° crossing
+                // never causes the compass tape to animate the long way around.
+                if !headingModeEnabled, let h = newHeading {
+                    let new = h.trueHeading
+                    var delta = new - compassHeading.truncatingRemainder(dividingBy: 360)
+                    if delta > 180 { delta -= 360 }
+                    if delta < -180 { delta += 360 }
+                    compassHeading += delta
+                }
                 // Suppress heading updates while the user has panned away or a detail sheet is open.
                 guard headingModeEnabled, snapBackTask == nil, selectedAircraft == nil else { return }
                 guard let heading = newHeading else { return }
@@ -274,8 +331,7 @@ struct MapView: View {
                     try? await Task.sleep(nanoseconds: 33_333_333) // ~30 fps
                 }
             }
-            } // NavigationStack
-        } // TimelineView
+        } // NavigationStack
     }
 
     /// Tries to match `navigation.pendingDeepLinkCallsign` against the current aircraft list.
@@ -298,64 +354,6 @@ struct MapView: View {
         lastSheetAircraftID = match.id
         selectedAircraft = match
         navigation.pendingDeepLinkCallsign = nil
-    }
-
-    /// Floating radius panel — always visible above the tab bar.
-    private var radiusSliderPanel: some View {
-        @Bindable var s = settings
-        return VStack(spacing: 0) {
-            HStack(alignment: .firstTextBaseline) {
-                Text("Search Radius")
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(.secondary)
-                    .textCase(.uppercase)
-                    .kerning(0.4)
-                Spacer()
-                Text(radiusLabel)
-                    .font(.system(size: 15, weight: .semibold))
-                    .monospacedDigit()
-                    .foregroundStyle(.primary)
-            }
-            .padding(.bottom, 6)
-
-            Slider(value: $s.radiusValue, in: 5...250, step: 5)
-                .tint(Color.accentColor)
-
-            HStack {
-                HStack(spacing: 7) {
-                    Circle()
-                        .fill(Color.green)
-                        .frame(width: 7, height: 7)
-                    Text("\(dataStore.aircraft.count) aircraft nearby")
-                        .font(.system(size: 14, weight: .semibold))
-                        .monospacedDigit()
-                }
-                Spacer()
-                Text(nextUpdateLabel)
-                    .font(.system(size: 11))
-                    .foregroundStyle(.secondary)
-            }
-            .padding(.top, 10)
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
-        .shadow(color: .black.opacity(0.12), radius: 10, y: 1)
-        .padding(.horizontal, 16)
-    }
-
-    private var radiusLabel: String {
-        "\(Int(settings.radiusValue)) \(settings.distanceUnit.shortLabel)"
-    }
-
-    private var nextUpdateLabel: String {
-        guard let last = dataStore.lastFetchAt else { return "Updating…" }
-        let interval = Double(settings.refreshInterval.rawValue)
-        let next = last.addingTimeInterval(interval)
-        let remaining = next.timeIntervalSinceNow
-        if remaining <= 0 { return "Updating…" }
-        if remaining < 60 { return "Next update in \(Int(remaining)) s" }
-        return "Next update in \(Int(remaining / 60)) min"
     }
 
     private var stackButtonStyle: some View { EmptyView() }
@@ -381,10 +379,7 @@ struct MapView: View {
     private var headingModeButton: some View {
         Button {
             headingModeEnabled.toggle()
-            if headingModeEnabled {
-                location.startUpdatingHeading()
-            } else {
-                location.stopUpdatingHeading()
+            if !headingModeEnabled {
                 cancelSnapBack()
             }
         } label: {
@@ -412,6 +407,28 @@ struct MapView: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel("Fit radius to screen")
+    }
+
+    /// Weather button (part of right-side stack). Fetches only on tap.
+    private var weatherButton: some View {
+        Button {
+            guard let coord = location.currentLocation?.coordinate else { return }
+            weatherLoading = true
+            weather = nil
+            showWeather = true
+            Task {
+                weather = try? await WeatherService.fetch(at: coord)
+                weatherLoading = false
+            }
+        } label: {
+            Image(systemName: weatherLoading ? "ellipsis" : "cloud.sun")
+                .font(.system(size: 17))
+                .foregroundStyle(Color.accentColor)
+                .frame(width: 44, height: 40)
+                .symbolEffect(.variableColor, isActive: weatherLoading)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Weather")
     }
 
     private func mapIconForStyle(_ style: MapStyleOption) -> String {
@@ -500,6 +517,166 @@ struct MapView: View {
         }
     }
 
+}
+
+// MARK: - Radius Slider Panel
+
+private struct RadiusSliderPanel: View {
+    @Environment(SettingsStore.self) private var settings
+    @Environment(AircraftDataStore.self) private var dataStore
+
+    var body: some View {
+        @Bindable var settings = settings
+        VStack(spacing: 0) {
+            HStack(alignment: .firstTextBaseline) {
+                Text("Search Radius")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(.secondary)
+                    .textCase(.uppercase)
+                    .kerning(0.4)
+                Spacer()
+                Text("\(Int(settings.radiusValue)) \(settings.distanceUnit.shortLabel)")
+                    .font(.system(size: 15, weight: .semibold))
+                    .monospacedDigit()
+                    .foregroundStyle(.primary)
+            }
+            .padding(.bottom, 6)
+
+            Slider(value: $settings.radiusValue, in: 5...250, step: 5)
+                .tint(Color.accentColor)
+
+            HStack {
+                HStack(spacing: 7) {
+                    Circle()
+                        .fill(Color.green)
+                        .frame(width: 7, height: 7)
+                    Text("\(dataStore.aircraft.count) aircraft nearby")
+                        .font(.system(size: 14, weight: .semibold))
+                        .monospacedDigit()
+                }
+                Spacer()
+                Text(nextUpdateLabel)
+                    .font(.system(size: 11))
+                    .foregroundStyle(.secondary)
+            }
+            .padding(.top, 10)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .shadow(color: .black.opacity(0.12), radius: 10, y: 1)
+        .padding(.horizontal, 16)
+    }
+
+    private var nextUpdateLabel: String {
+        guard let last = dataStore.lastFetchAt else { return "Updating…" }
+        let interval = Double(settings.refreshInterval.rawValue)
+        let next = last.addingTimeInterval(interval)
+        let remaining = next.timeIntervalSinceNow
+        if remaining <= 0 { return "Updating…" }
+        if remaining < 60 { return "Next update in \(Int(remaining)) s" }
+        return "Next update in \(Int(remaining / 60)) min"
+    }
+}
+
+// MARK: - Direction Cone
+
+private struct DirectionConeView: View {
+    var angleDegrees: Double
+    var color: Color
+
+    var body: some View {
+        ConeShape(angleDegrees: angleDegrees)
+            .fill(
+                RadialGradient(
+                    colors: [color.opacity(0.72), color.opacity(0)],
+                    center: .center,
+                    startRadius: 6,
+                    endRadius: 58
+                )
+            )
+            .animation(.linear(duration: 0.1), value: angleDegrees)
+    }
+}
+
+private struct ConeShape: Shape {
+    var angleDegrees: Double
+    private let spreadDegrees: Double = 65
+
+    var animatableData: Double {
+        get { angleDegrees }
+        set { angleDegrees = newValue }
+    }
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let center = CGPoint(x: rect.midX, y: rect.midY)
+        let radius = min(rect.width, rect.height) / 2
+        let startAngle = Angle(degrees: angleDegrees - spreadDegrees / 2 - 90)
+        let endAngle = Angle(degrees: angleDegrees + spreadDegrees / 2 - 90)
+        path.move(to: center)
+        path.addArc(center: center, radius: radius,
+                    startAngle: startAngle, endAngle: endAngle, clockwise: false)
+        path.closeSubpath()
+        return path
+    }
+}
+
+// MARK: - Compass Strip
+
+private struct CompassStripView: View {
+    var heading: Double
+
+    private let pixelsPerDegree: CGFloat = 2.2
+    private let stripWidth: CGFloat = 180
+
+    private static let ticks: [(label: String, degree: Double, isMajor: Bool)] = {
+        let base: [(String, Double, Bool)] = [
+            ("N", 0, true), ("NE", 45, false), ("E", 90, true),
+            ("SE", 135, false), ("S", 180, true), ("SW", 225, false),
+            ("W", 270, true), ("NW", 315, false)
+        ]
+        return base.map { ($0.0, $0.1 - 360, $0.2) }
+             + base
+             + base.map { ($0.0, $0.1 + 360, $0.2) }
+    }()
+
+    var body: some View {
+        VStack(spacing: 2) {
+            Image(systemName: "arrowtriangle.down.fill")
+                .font(.system(size: 7))
+                .foregroundStyle(.white)
+
+            ZStack {
+                ForEach(Array(Self.ticks.enumerated()), id: \.offset) { _, tick in
+                    let xOff = xOffset(for: tick.degree)
+                    Text(tick.label)
+                        .font(.system(size: tick.isMajor ? 11 : 9,
+                                      weight: tick.isMajor ? .semibold : .regular))
+                        .foregroundStyle(
+                            tick.label == "N"
+                                ? Color.red
+                                : Color.white.opacity(tick.isMajor ? 1 : 0.65)
+                        )
+                        .offset(x: xOff)
+                        .opacity(abs(xOff) < stripWidth / 2 + 24 ? 1 : 0)
+                }
+            }
+            .animation(.linear(duration: 0.1), value: heading)
+            .frame(width: stripWidth, height: 14)
+            .clipped()
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 6)
+        .background(.ultraThinMaterial, in: Capsule())
+    }
+
+    private func xOffset(for degree: Double) -> CGFloat {
+        var d = (degree - heading).truncatingRemainder(dividingBy: 360)
+        if d > 180 { d -= 360 }
+        if d < -180 { d += 360 }
+        return CGFloat(d) * pixelsPerDegree
+    }
 }
 
 #Preview {
