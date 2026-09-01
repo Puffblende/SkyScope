@@ -3,7 +3,7 @@ import SwiftData
 import ActivityKit
 
 @main
-struct SkyScopeApp: App {
+struct ChocksApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @State private var settings = SettingsStore.shared
     @State private var location = LocationService()
@@ -11,6 +11,7 @@ struct SkyScopeApp: App {
     @State private var dataStore: AircraftDataStore
     @State private var navigation = NavigationCoordinator()
     @State private var follow = FollowStore()
+    @State private var arPermission = ARPermissionStore()
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
 
     init() {
@@ -27,7 +28,9 @@ struct SkyScopeApp: App {
         _dataStore = State(initialValue: dataStore)
 
         let authInfo = ActivityAuthorizationInfo()
+        #if DEBUG
         print("[STARTUP] areActivitiesEnabled: \(authInfo.areActivitiesEnabled)")
+        #endif
     }
 
     var body: some Scene {
@@ -39,6 +42,7 @@ struct SkyScopeApp: App {
                 .environment(dataStore)
                 .environment(navigation)
                 .environment(follow)
+                .environment(arPermission)
                 .preferredColorScheme(settings.colorScheme.preferredColorScheme)
                 .fullScreenCover(isPresented: Binding(
                     get: { !hasCompletedOnboarding },
@@ -47,9 +51,12 @@ struct SkyScopeApp: App {
                     // Explicitly inject location — @Observable environment values are not
                     // guaranteed to propagate into modal presentations in all iOS versions.
                     OnboardingView { hasCompletedOnboarding = true }
+                        .environment(settings)
                         .environment(location)
+                        .environment(arPermission)
                 }
                 .task {
+                    arPermission.refreshCameraStatus()
                     // Only re-request authorization on subsequent launches (onboarding
                     // handles the first-launch request on slide 0).
                     if hasCompletedOnboarding {

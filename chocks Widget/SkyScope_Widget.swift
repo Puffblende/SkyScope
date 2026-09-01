@@ -1,6 +1,6 @@
 //
-//  SkyScope_Widget.swift
-//  SkyScope Widget
+//  ChocksWidget.swift
+//  chocks Widget
 //
 //  Created by Dennis Kiefer on 28.05.26.
 //
@@ -41,7 +41,7 @@ struct SimpleEntry: TimelineEntry {
     let configuration: ConfigurationAppIntent
 }
 
-struct SkyScope_WidgetEntryView : View {
+struct ChocksWidgetEntryView : View {
     var entry: Provider.Entry
 
     var body: some View {
@@ -55,12 +55,12 @@ struct SkyScope_WidgetEntryView : View {
     }
 }
 
-struct SkyScope_Widget: Widget {
-    let kind: String = "SkyScope_Widget"
+struct ChocksWidget: Widget {
+    let kind: String = "ChocksWidget"
 
     var body: some WidgetConfiguration {
         AppIntentConfiguration(kind: kind, intent: ConfigurationAppIntent.self, provider: Provider()) { entry in
-            SkyScope_WidgetEntryView(entry: entry)
+            ChocksWidgetEntryView(entry: entry)
                 .containerBackground(.fill.tertiary, for: .widget)
         }
     }
@@ -81,7 +81,7 @@ extension ConfigurationAppIntent {
 }
 
 #Preview(as: .systemSmall) {
-    SkyScope_Widget()
+    ChocksWidget()
 } timeline: {
     SimpleEntry(date: .now, configuration: .smiley)
     SimpleEntry(date: .now, configuration: .starEyes)

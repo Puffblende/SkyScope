@@ -10,6 +10,7 @@ struct ContentView: View {
     @Environment(AircraftDataStore.self) private var dataStore
     @Environment(FollowStore.self) private var follow
     @Environment(LocationService.self) private var location
+    @Environment(ARPermissionStore.self) private var arPermission
     @Query private var favorites: [Favorite]
 
     var body: some View {
@@ -40,6 +41,7 @@ struct ContentView: View {
             navigation.handleOpenURL(url)
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+            arPermission.refreshCameraStatus()
             dataStore.isForeground = true
             dataStore.startPolling()
         }
@@ -68,6 +70,7 @@ struct ContentView: View {
                 await LiveActivityManager.shared.update(target: target)
             }
         }
+        #if DEBUG
         .overlay {
             if DebugStore.shared.isEnabled {
                 Rectangle()
@@ -81,6 +84,7 @@ struct ContentView: View {
                 DebugBadge(dataStore: dataStore)
             }
         }
+        #endif
     }
 }
 
@@ -236,5 +240,6 @@ private struct DebugLogSheet: View {
         .environment(APIRouter(settings: SettingsStore.shared))
         .environment(NavigationCoordinator())
         .environment(FollowStore())
+        .environment(ARPermissionStore())
         .modelContainer(for: Favorite.self, inMemory: true)
 }

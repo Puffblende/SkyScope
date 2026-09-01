@@ -8,9 +8,13 @@
 
 /* Begin PBXBuildFile section */
 		3C10F924338CD75CE93EBF4D /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 16B728161DF293C8C30AB7C8 /* GoogleService-Info.plist */; };
+		950584753043869500DFA3D6 /* ARPermissionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 950584743043869500DFA3D6 /* ARPermissionStore.swift */; };
+		95058477304386BC00DFA3D6 /* ARAircraftProjection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95058476304386BC00DFA3D6 /* ARAircraftProjection.swift */; };
+		950584793043870C00DFA3D6 /* ARAircraftView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 950584783043870C00DFA3D6 /* ARAircraftView.swift */; };
+		9505847B3044CC4F00DFA3D6 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 9505847A3044CC4F00DFA3D6 /* PrivacyInfo.xcprivacy */; };
 		9520359D3028CA72007394C2 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = 9520359C3028CA72007394C2 /* FirebaseMessaging */; };
 		95692F3E2FC26CBB00112CE6 /* CLAUDE.md in Resources */ = {isa = PBXBuildFile; fileRef = 95692F3D2FC26CBB00112CE6 /* CLAUDE.md */; };
-		956D581B2FC3A8F300E2503F /* SkyScopeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 956D581A2FC3A8F300E2503F /* SkyScopeApp.swift */; };
+		956D581B2FC3A8F300E2503F /* ChocksApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 956D581A2FC3A8F300E2503F /* ChocksApp.swift */; };
 		956D581D2FC3A8FC00E2503F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 956D581C2FC3A8FC00E2503F /* ContentView.swift */; };
 		956D58282FC3AED100E2503F /* ListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 956D58232FC3A96100E2503F /* ListView.swift */; };
 		956D58292FC3AED100E2503F /* FlightAwareService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 956D58162FC3A8B600E2503F /* FlightAwareService.swift */; };
@@ -46,11 +50,11 @@
 		95B0EAE0303E41EE002EBF33 /* WeatherService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95B0EADF303E41EE002EBF33 /* WeatherService.swift */; };
 		95B0EAE2303E425D002EBF33 /* WeatherOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95B0EAE1303E425D002EBF33 /* WeatherOverlayView.swift */; };
 		95B452FC2FD609550059921E /* AirportCoordinatesService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95B452FB2FD609520059921E /* AirportCoordinatesService.swift */; };
-		95FB72222FC799DA00FA9D48 /* SkyScopeActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95FB72202FC799DA00FA9D48 /* SkyScopeActivityAttributes.swift */; };
+		95FB72222FC799DA00FA9D48 /* ChocksActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95FB72202FC799DA00FA9D48 /* ChocksActivityAttributes.swift */; };
 		95FB72622FC8679900FA9D48 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 95FB722A2FC7A0F600FA9D48 /* WidgetKit.framework */; };
 		95FB72632FC8679900FA9D48 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 95FB722C2FC7A0F600FA9D48 /* SwiftUI.framework */; };
 		95FB72742FC8679A00FA9D48 /* SkyScope WidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 95FB72612FC8679900FA9D48 /* SkyScope WidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		95FB72792FC8696B00FA9D48 /* SkyScopeActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95FB72202FC799DA00FA9D48 /* SkyScopeActivityAttributes.swift */; };
+		95FB72792FC8696B00FA9D48 /* ChocksActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95FB72202FC799DA00FA9D48 /* ChocksActivityAttributes.swift */; };
 		A1C6A2348BB96A1F12F80170 /* FirebaseInstallations in Frameworks */ = {isa = PBXBuildFile; productRef = EAAF28621F0086BBAD47A814 /* FirebaseInstallations */; };
 		AAC18553E2C74252BA819A5F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 503153570229F54343451459 /* AppDelegate.swift */; };
 		C7EA84A55D3674B2AEAF1CA2 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 906DC6CBCA03D2B862355335 /* FirebaseCore */; };
@@ -83,6 +87,10 @@
 /* Begin PBXFileReference section */
 		16B728161DF293C8C30AB7C8 /* GoogleService-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		503153570229F54343451459 /* AppDelegate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		950584743043869500DFA3D6 /* ARPermissionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARPermissionStore.swift; sourceTree = "<group>"; };
+		95058476304386BC00DFA3D6 /* ARAircraftProjection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARAircraftProjection.swift; sourceTree = "<group>"; };
+		950584783043870C00DFA3D6 /* ARAircraftView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARAircraftView.swift; sourceTree = "<group>"; };
+		9505847A3044CC4F00DFA3D6 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		95692F2F2FC26B4600112CE6 /* SkyScope.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SkyScope.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		95692F3D2FC26CBB00112CE6 /* CLAUDE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CLAUDE.md; sourceTree = "<group>"; };
 		956D58102FC3A82100E2503F /* Aircraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Aircraft.swift; sourceTree = "<group>"; };
@@ -93,7 +101,7 @@
 		956D58162FC3A8B600E2503F /* FlightAwareService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlightAwareService.swift; sourceTree = "<group>"; };
 		956D58172FC3A8CE00E2503F /* APIRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIRouter.swift; sourceTree = "<group>"; };
 		956D58192FC3A8E100E2503F /* AircraftDataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AircraftDataStore.swift; sourceTree = "<group>"; };
-		956D581A2FC3A8F300E2503F /* SkyScopeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkyScopeApp.swift; sourceTree = "<group>"; };
+		956D581A2FC3A8F300E2503F /* ChocksApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChocksApp.swift; sourceTree = "<group>"; };
 		956D581C2FC3A8FC00E2503F /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		956D58202FC3A91D00E2503F /* AircraftAnnotation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AircraftAnnotation.swift; sourceTree = "<group>"; };
 		956D58212FC3A92F00E2503F /* AircraftDetailSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AircraftDetailSheet.swift; sourceTree = "<group>"; };
@@ -102,7 +110,7 @@
 		956D58242FC3A97A00E2503F /* FavoritesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoritesView.swift; sourceTree = "<group>"; };
 		956D58252FC3A98D00E2503F /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		956D58272FC3A9AC00E2503F /* WhatsOverMeIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhatsOverMeIntent.swift; sourceTree = "<group>"; };
-		956D58372FC3B52E00E2503F /* SkyScope-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "SkyScope-Info.plist"; sourceTree = "<group>"; };
+		956D58372FC3B52E00E2503F /* chocks-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "chocks-Info.plist"; sourceTree = "<group>"; };
 		956D58382FC488A500E2503F /* NavigationCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationCoordinator.swift; sourceTree = "<group>"; };
 		956D583A2FC508A000E2503F /* AdsbdbService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdsbdbService.swift; sourceTree = "<group>"; };
 		956D583C2FC63F2800E2503F /* AircraftSilhouetteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AircraftSilhouetteView.swift; sourceTree = "<group>"; };
@@ -122,16 +130,16 @@
 		95B0EADF303E41EE002EBF33 /* WeatherService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherService.swift; sourceTree = "<group>"; };
 		95B0EAE1303E425D002EBF33 /* WeatherOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherOverlayView.swift; sourceTree = "<group>"; };
 		95B452FB2FD609520059921E /* AirportCoordinatesService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirportCoordinatesService.swift; sourceTree = "<group>"; };
-		95FB72202FC799DA00FA9D48 /* SkyScopeActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkyScopeActivityAttributes.swift; sourceTree = "<group>"; };
-		95FB72232FC79CBC00FA9D48 /* SkyScope.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SkyScope.entitlements; sourceTree = "<group>"; };
+		95FB72202FC799DA00FA9D48 /* ChocksActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChocksActivityAttributes.swift; sourceTree = "<group>"; };
+		95FB72232FC79CBC00FA9D48 /* chocks.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = chocks.entitlements; sourceTree = "<group>"; };
 		95FB722A2FC7A0F600FA9D48 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		95FB722C2FC7A0F600FA9D48 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
-		95FB725B2FC7A31300FA9D48 /* SkyScope WidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "SkyScope WidgetExtension.entitlements"; sourceTree = "<group>"; };
+		95FB725B2FC7A31300FA9D48 /* chocks WidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "chocks WidgetExtension.entitlements"; sourceTree = "<group>"; };
 		95FB72612FC8679900FA9D48 /* SkyScope WidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "SkyScope WidgetExtension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		95FB72752FC8679A00FA9D48 /* Exceptions for "SkyScope Widget" folder in "SkyScope WidgetExtension" target */ = {
+		95FB72752FC8679A00FA9D48 /* Exceptions for "chocks Widget" folder in "SkyScope WidgetExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -141,12 +149,12 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		95FB72642FC8679900FA9D48 /* SkyScope Widget */ = {
+		95FB72642FC8679900FA9D48 /* chocks Widget */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				95FB72752FC8679A00FA9D48 /* Exceptions for "SkyScope Widget" folder in "SkyScope WidgetExtension" target */,
+				95FB72752FC8679A00FA9D48 /* Exceptions for "chocks Widget" folder in "SkyScope WidgetExtension" target */,
 			);
-			path = "SkyScope Widget";
+			path = "chocks Widget";
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -179,11 +187,11 @@
 			children = (
 				95B452FB2FD609520059921E /* AirportCoordinatesService.swift */,
 				95A084252FC8FBE7003034F6 /* LiveActivityManager.swift */,
-				95FB725B2FC7A31300FA9D48 /* SkyScope WidgetExtension.entitlements */,
-				95FB72232FC79CBC00FA9D48 /* SkyScope.entitlements */,
-				956D58372FC3B52E00E2503F /* SkyScope-Info.plist */,
+				95FB725B2FC7A31300FA9D48 /* chocks WidgetExtension.entitlements */,
+				95FB72232FC79CBC00FA9D48 /* chocks.entitlements */,
+				956D58372FC3B52E00E2503F /* chocks-Info.plist */,
 				95692F3D2FC26CBB00112CE6 /* CLAUDE.md */,
-				95FB72642FC8679900FA9D48 /* SkyScope Widget */,
+				95FB72642FC8679900FA9D48 /* chocks Widget */,
 				95FB72292FC7A0F600FA9D48 /* Frameworks */,
 				95692F302FC26B4600112CE6 /* Products */,
 				956D580F2FC3A82100E2503F /* Models */,
@@ -196,6 +204,7 @@
 				16B728161DF293C8C30AB7C8 /* GoogleService-Info.plist */,
 				503153570229F54343451459 /* AppDelegate.swift */,
 				95B0EAAA302A7391002EBF33 /* Recovered References */,
+				9505847A3044CC4F00DFA3D6 /* PrivacyInfo.xcprivacy */,
 			);
 			sourceTree = "<group>";
 		};
@@ -230,6 +239,7 @@
 				95B0EAC1302D2977002EBF33 /* AirplanesLiveService.swift */,
 				95B0EAD9302F6CB2002EBF33 /* AirportDetailService.swift */,
 				95B0EADF303E41EE002EBF33 /* WeatherService.swift */,
+				950584743043869500DFA3D6 /* ARPermissionStore.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -241,6 +251,7 @@
 				956D58382FC488A500E2503F /* NavigationCoordinator.swift */,
 				95B0EAB9302A76DD002EBF33 /* FollowStore.swift */,
 				95B0EAC5302E7A10002EBF33 /* DebugStore.swift */,
+				95058476304386BC00DFA3D6 /* ARAircraftProjection.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -257,6 +268,7 @@
 				95B0EABB302A7E3B002EBF33 /* OnboardingView.swift */,
 				95B0EABD302A7E50002EBF33 /* HelpView.swift */,
 				95B0EABF302A7E6A002EBF33 /* FeedbackView.swift */,
+				950584783043870C00DFA3D6 /* ARAircraftView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -286,7 +298,7 @@
 		95B0EAAA302A7391002EBF33 /* Recovered References */ = {
 			isa = PBXGroup;
 			children = (
-				956D581A2FC3A8F300E2503F /* SkyScopeApp.swift */,
+				956D581A2FC3A8F300E2503F /* ChocksApp.swift */,
 			);
 			name = "Recovered References";
 			sourceTree = "<group>";
@@ -294,7 +306,7 @@
 		95FB72212FC799DA00FA9D48 /* LiveActivity */ = {
 			isa = PBXGroup;
 			children = (
-				95FB72202FC799DA00FA9D48 /* SkyScopeActivityAttributes.swift */,
+				95FB72202FC799DA00FA9D48 /* ChocksActivityAttributes.swift */,
 			);
 			path = LiveActivity;
 			sourceTree = "<group>";
@@ -348,7 +360,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				95FB72642FC8679900FA9D48 /* SkyScope Widget */,
+				95FB72642FC8679900FA9D48 /* chocks Widget */,
 			);
 			name = "SkyScope WidgetExtension";
 			productName = "SkyScope WidgetExtension";
@@ -401,6 +413,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9505847B3044CC4F00DFA3D6 /* PrivacyInfo.xcprivacy in Resources */,
 				95692F3E2FC26CBB00112CE6 /* CLAUDE.md in Resources */,
 				3C10F924338CD75CE93EBF4D /* GoogleService-Info.plist in Resources */,
 			);
@@ -422,10 +435,11 @@
 			files = (
 				95B0EAE2303E425D002EBF33 /* WeatherOverlayView.swift in Sources */,
 				956D581D2FC3A8FC00E2503F /* ContentView.swift in Sources */,
-				956D581B2FC3A8F300E2503F /* SkyScopeApp.swift in Sources */,
+				956D581B2FC3A8F300E2503F /* ChocksApp.swift in Sources */,
+				950584793043870C00DFA3D6 /* ARAircraftView.swift in Sources */,
 				95A084262FC8FBE7003034F6 /* LiveActivityManager.swift in Sources */,
 				95B0EABC302A7E3C002EBF33 /* OnboardingView.swift in Sources */,
-				95FB72222FC799DA00FA9D48 /* SkyScopeActivityAttributes.swift in Sources */,
+				95FB72222FC799DA00FA9D48 /* ChocksActivityAttributes.swift in Sources */,
 				95B0EABE302A7E50002EBF33 /* HelpView.swift in Sources */,
 				956D58282FC3AED100E2503F /* ListView.swift in Sources */,
 				956D583F2FC6509600E2503F /* DebugWikipediaValidatorView.swift in Sources */,
@@ -437,6 +451,7 @@
 				956D582B2FC3AED100E2503F /* AircraftAnnotation.swift in Sources */,
 				95B0EAC0302A7E6A002EBF33 /* FeedbackView.swift in Sources */,
 				956D582C2FC3AED100E2503F /* Aircraft.swift in Sources */,
+				95058477304386BC00DFA3D6 /* ARAircraftProjection.swift in Sources */,
 				956D583D2FC63F2800E2503F /* AircraftSilhouetteView.swift in Sources */,
 				956D582D2FC3AED100E2503F /* AppSettings.swift in Sources */,
 				956D582E2FC3AED100E2503F /* AircraftDetailSheet.swift in Sources */,
@@ -450,6 +465,7 @@
 				95B0EADE302F6CE0002EBF33 /* AirportCardView.swift in Sources */,
 				956D58322FC3AED100E2503F /* WhatsOverMeIntent.swift in Sources */,
 				956D58332FC3AED100E2503F /* Favorite.swift in Sources */,
+				950584753043869500DFA3D6 /* ARPermissionStore.swift in Sources */,
 				956D58342FC3AED100E2503F /* OpenSkyService.swift in Sources */,
 				956D58352FC3AED100E2503F /* APIRouter.swift in Sources */,
 				956D58362FC3AED100E2503F /* SettingsView.swift in Sources */,
@@ -465,7 +481,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				95FB72792FC8696B00FA9D48 /* SkyScopeActivityAttributes.swift in Sources */,
+				95FB72792FC8696B00FA9D48 /* ChocksActivityAttributes.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -21,16 +21,18 @@ final class AppDelegate: NSObject,
         // Register the background refresh task that keeps the Live Activity current
         // while the app is suspended. iOS calls this at most every ~15 minutes.
         BGTaskScheduler.shared.register(
-            forTaskWithIdentifier: "com.skyscope.bgrefresh",
+            forTaskWithIdentifier: "com.chocks.bgrefresh",
             using: nil
         ) { task in
-            task.expirationHandler = { task.setTaskCompleted(success: false) }
-            Task { @MainActor in
+            let refreshTask = Task { @MainActor in
                 if LiveActivityManager.shared.isRunning {
                     await AircraftDataStore.shared?.refresh()
                 }
-                task.setTaskCompleted(success: true)
+                task.setTaskCompleted(success: !Task.isCancelled)
                 AppDelegate.scheduleBackgroundRefresh()
+            }
+            task.expirationHandler = {
+                refreshTask.cancel()
             }
         }
         AppDelegate.scheduleBackgroundRefresh()
@@ -54,7 +56,9 @@ final class AppDelegate: NSObject,
         _ application: UIApplication,
         didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
     ) {
+        #if DEBUG
         print("[AppDelegate] APNs device token received (\(deviceToken.count) bytes)")
+        #endif
         Messaging.messaging().apnsToken = deviceToken
     }
 
@@ -62,7 +66,9 @@ final class AppDelegate: NSObject,
         _ application: UIApplication,
         didFailToRegisterForRemoteNotificationsWithError error: Error
     ) {
+        #if DEBUG
         print("[AppDelegate] APNs registration failed: \(error.localizedDescription)")
+        #endif
     }
 
     func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
@@ -95,8 +101,14 @@ final class AppDelegate: NSObject,
     // MARK: - Background refresh scheduling
 
     static func scheduleBackgroundRefresh() {
-        let request = BGAppRefreshTaskRequest(identifier: "com.skyscope.bgrefresh")
+        let request = BGAppRefreshTaskRequest(identifier: "com.chocks.bgrefresh")
         request.earliestBeginDate = Date(timeIntervalSinceNow: 15 * 60)
-        try? BGTaskScheduler.shared.submit(request)
+        do {
+            try BGTaskScheduler.shared.submit(request)
+        } catch {
+            #if DEBUG
+            print("[AppDelegate] Failed to schedule background refresh: \(error.localizedDescription)")
+            #endif
+        }
     }
 }

@@ -47,7 +47,9 @@ actor AirportDetailService {
             let (data, _) = try await URLSession.shared.data(from: url)
             return try JSONDecoder().decode([AWAirportResponse].self, from: data).first.map { ParsedAirport(from: $0) }
         } catch {
+            #if DEBUG
             print("[AirportDetailService] Airport fetch failed for \(icao): \(error.localizedDescription)")
+            #endif
             return nil
         }
     }
@@ -72,7 +74,9 @@ actor AirportDetailService {
                 reportTime: first.obsTime.map { Date(timeIntervalSince1970: TimeInterval($0)) }
             )
         } catch {
+            #if DEBUG
             print("[AirportDetailService] METAR fetch failed for \(icao): \(error.localizedDescription)")
+            #endif
             return nil
         }
     }
@@ -200,7 +204,7 @@ private struct WikiInfo {
 
 // MARK: - Raw API models
 
-private struct AWAirportResponse: Decodable {
+private nonisolated struct AWAirportResponse: Decodable {
     let icaoId: String?
     let iataId: String?
     let name: String?
@@ -213,7 +217,7 @@ private struct AWAirportResponse: Decodable {
     let freqs: String?
 }
 
-private struct AWMetarResponse: Decodable {
+private nonisolated struct AWMetarResponse: Decodable {
     let rawOb: String?
     let obsTime: Double?  // API returns numeric timestamp; Double covers both Int and Float forms
     let temp: Double?
@@ -244,18 +248,18 @@ private struct AWMetarResponse: Decodable {
     }
 }
 
-private struct AWTAFResponse: Decodable {
+private nonisolated struct AWTAFResponse: Decodable {
     let rawTAF: String?
 }
 
-private struct WikiSearchResult: Decodable {
-    struct Query: Decodable {
-        struct Page: Decodable {
+private nonisolated struct WikiSearchResult: Decodable {
+    nonisolated struct Query: Decodable {
+        nonisolated struct Page: Decodable {
             let index: Int?      // relevance rank from the search generator (1 = best match)
             let title: String?
             let thumbnail: Thumbnail?
             let extract: String?
-            struct Thumbnail: Decodable { let source: String? }
+            nonisolated struct Thumbnail: Decodable { let source: String? }
         }
         let pages: [String: Page]?
     }
@@ -264,7 +268,7 @@ private struct WikiSearchResult: Decodable {
 
 // MARK: - Intermediate mapping
 
-private struct ParsedAirport {
+private nonisolated struct ParsedAirport {
     let iata: String?
     let name: String
     let city: String

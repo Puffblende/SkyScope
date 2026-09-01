@@ -1,4 +1,5 @@
 import Foundation
+import Security
 import SwiftUI
 import UIKit
 
@@ -213,6 +214,7 @@ final class SettingsStore {
         static let dynamicIslandStyle = "settings.liveActivity.diStyle"
         static let lockScreenStyle    = "settings.liveActivity.lockScreenStyle"
         static let coneColorHex       = "settings.appearance.coneColorHex"
+        static let arModeEnabled      = "settings.ar.enabled"
     }
 
     @ObservationIgnored private let defaults: UserDefaults
@@ -246,7 +248,10 @@ final class SettingsStore {
     }
 
     var openSkyPassword: String {
-        didSet { defaults.set(openSkyPassword, forKey: Keys.openSkyPassword) }
+        didSet {
+            Self.setOpenSkyPassword(openSkyPassword)
+            defaults.removeObject(forKey: Keys.openSkyPassword)
+        }
     }
 
     var colorScheme: AppColorScheme {
@@ -273,6 +278,10 @@ final class SettingsStore {
         didSet { defaults.set(coneColorHex, forKey: Keys.coneColorHex) }
     }
 
+    var arModeEnabled: Bool {
+        didSet { defaults.set(arModeEnabled, forKey: Keys.arModeEnabled) }
+    }
+
     var coneColor: Color {
         get { Color(hex: coneColorHex) }
         set { coneColorHex = UIColor(newValue).hexString }
@@ -288,7 +297,17 @@ final class SettingsStore {
         self.refreshInterval = RefreshInterval(rawValue: defaults.integer(forKey: Keys.refreshInterval)) ?? .twoMinutes
         self.launchLiveActivityOnStartup = (defaults.object(forKey: Keys.liveActivityOnLaunch) as? Bool) ?? true
         self.openSkyUsername = defaults.string(forKey: Keys.openSkyUsername) ?? ""
-        self.openSkyPassword = defaults.string(forKey: Keys.openSkyPassword) ?? ""
+        let legacyOpenSkyPassword = defaults.string(forKey: Keys.openSkyPassword)
+        let keychainOpenSkyPassword = Self.openSkyPasswordFromKeychain()
+        if let legacyOpenSkyPassword,
+           !legacyOpenSkyPassword.isEmpty,
+           keychainOpenSkyPassword == nil {
+            Self.setOpenSkyPassword(legacyOpenSkyPassword)
+        }
+        self.openSkyPassword = keychainOpenSkyPassword ?? legacyOpenSkyPassword ?? ""
+        if legacyOpenSkyPassword != nil {
+            defaults.removeObject(forKey: Keys.openSkyPassword)
+        }
         self.colorScheme = AppColorScheme(rawValue: defaults.string(forKey: Keys.colorScheme) ?? "") ?? .system
         self.mapStyle = MapStyleOption(rawValue: defaults.string(forKey: Keys.mapStyle) ?? "") ?? .standard
         self.badgeStyle = BadgeStyle(rawValue: defaults.string(forKey: Keys.badgeStyle) ?? "") ?? .solid
@@ -297,6 +316,7 @@ final class SettingsStore {
         self.lockScreenLayoutStyle = LockScreenLayoutStyle(
             rawValue: defaults.string(forKey: Keys.lockScreenStyle) ?? "") ?? .telemetry
         self.coneColorHex = defaults.string(forKey: Keys.coneColorHex) ?? "#FFFFFF"
+        self.arModeEnabled = (defaults.object(forKey: Keys.arModeEnabled) as? Bool) ?? false
     }
 
     /// Radius converted to meters for API queries and map overlay rendering.
@@ -304,6 +324,65 @@ final class SettingsStore {
         switch distanceUnit {
         case .kilometers: return radiusValue * 1_000
         case .nauticalMiles: return radiusValue * 1_852
+        }
+    }
+
+    private nonisolated static let keychainService = "com.chocks.openSky"
+    private nonisolated static let legacyKeychainService = "DK.SkyScope"
+
+    private static func openSkyPasswordKeychainQuery(service: String = keychainService) -> [String: Any] {
+        [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: Keys.openSkyPassword
+        ]
+    }
+
+    private static func openSkyPasswordFromKeychain() -> String? {
+        if let password = openSkyPasswordFromKeychain(service: keychainService) {
+            return password
+        }
+        guard let legacyPassword = openSkyPasswordFromKeychain(service: legacyKeychainService) else {
+            return nil
+        }
+        setOpenSkyPassword(legacyPassword)
+        SecItemDelete(openSkyPasswordKeychainQuery(service: legacyKeychainService) as CFDictionary)
+        return legacyPassword
+    }
+
+    private static func openSkyPasswordFromKeychain(service: String) -> String? {
+        var query = openSkyPasswordKeychainQuery(service: service)
+        query[kSecReturnData as String] = true
+        query[kSecMatchLimit as String] = kSecMatchLimitOne
+
+        var item: CFTypeRef?
+        let status = SecItemCopyMatching(query as CFDictionary, &item)
+        guard status == errSecSuccess,
+              let data = item as? Data
+        else { return nil }
+
+        return String(data: data, encoding: .utf8)
+    }
+
+    private static func setOpenSkyPassword(_ password: String) {
+        guard !password.isEmpty else {
+            SecItemDelete(openSkyPasswordKeychainQuery() as CFDictionary)
+            SecItemDelete(openSkyPasswordKeychainQuery(service: legacyKeychainService) as CFDictionary)
+            return
+        }
+
+        let data = Data(password.utf8)
+        let attributesToUpdate = [kSecValueData as String: data]
+        let updateStatus = SecItemUpdate(
+            openSkyPasswordKeychainQuery() as CFDictionary,
+            attributesToUpdate as CFDictionary
+        )
+
+        if updateStatus == errSecItemNotFound {
+            var query = openSkyPasswordKeychainQuery()
+            query[kSecValueData as String] = data
+            query[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
+            SecItemAdd(query as CFDictionary, nil)
         }
     }
 }

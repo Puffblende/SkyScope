@@ -34,7 +34,7 @@ final class LocationService: NSObject {
         manager.delegate = self
         manager.desiredAccuracy = kCLLocationAccuracyHundredMeters
         manager.distanceFilter = 250 // only re-fire when user moves ~250 m
-        manager.pausesLocationUpdatesAutomatically = false
+        manager.pausesLocationUpdatesAutomatically = true
         manager.headingFilter = 2 // only report heading changes >= 2 degrees
     }
 
@@ -53,7 +53,9 @@ final class LocationService: NSObject {
         }
         if let cachedLocation = manager.location {
             self.currentLocation = cachedLocation
+            #if DEBUG
             print("[LOC] Using cached location immediately")
+            #endif
         }
         manager.startUpdatingLocation()
     }
@@ -89,12 +91,10 @@ extension LocationService: CLLocationManagerDelegate {
     }
 
     nonisolated func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        guard let latest = locations.last else { return }
+        guard let latest = locations.last,
+              latest.horizontalAccuracy >= 0,
+              latest.horizontalAccuracy < 1_000 else { return }
         Task { @MainActor in
-            // Only update if new location is more accurate than current
-            if let current = self.currentLocation {
-                guard latest.horizontalAccuracy < current.horizontalAccuracy else { return }
-            }
             self.currentLocation = latest
             self.lastError = nil
 

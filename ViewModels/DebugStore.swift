@@ -22,19 +22,25 @@ final class DebugStore {
     }
 
     func log(_ message: String, isError: Bool = false) {
+        #if DEBUG
         entries.insert(LogEntry(timestamp: .now, message: message, isError: isError), at: 0)
         if entries.count > maxEntries { entries.removeLast() }
+        #endif
     }
 
     func clear() {
+        #if DEBUG
         entries = []
+        #endif
     }
 
     func toggle() {
+        #if DEBUG
         isEnabled.toggle()
         if isEnabled {
             entries = []
             log("🐛 Debug mode activated")
         }
+        #endif
     }
 }

@@ -1,6 +1,6 @@
 //
-//  SkyScope_WidgetControl.swift
-//  SkyScope Widget
+//  ChocksWidgetControl.swift
+//  chocks Widget
 //
 //  Created by Dennis Kiefer on 28.05.26.
 //
@@ -9,8 +9,8 @@ import AppIntents
 import SwiftUI
 import WidgetKit
 
-struct SkyScope_WidgetControl: ControlWidget {
-    static let kind: String = "DK.SkyScope.SkyScope Widget"
+struct ChocksWidgetControl: ControlWidget {
+    static let kind: String = "com.chocks.widget.control"
 
     var body: some ControlWidgetConfiguration {
         AppIntentControlConfiguration(
@@ -30,7 +30,7 @@ struct SkyScope_WidgetControl: ControlWidget {
     }
 }
 
-extension SkyScope_WidgetControl {
+extension ChocksWidgetControl {
     struct Value {
         var isRunning: Bool
         var name: String
@@ -38,12 +38,12 @@ extension SkyScope_WidgetControl {
 
     struct Provider: AppIntentControlValueProvider {
         func previewValue(configuration: TimerConfiguration) -> Value {
-            SkyScope_WidgetControl.Value(isRunning: false, name: configuration.timerName)
+            ChocksWidgetControl.Value(isRunning: false, name: configuration.timerName)
         }
 
         func currentValue(configuration: TimerConfiguration) async throws -> Value {
             let isRunning = true // Check if the timer is running
-            return SkyScope_WidgetControl.Value(isRunning: isRunning, name: configuration.timerName)
+            return ChocksWidgetControl.Value(isRunning: isRunning, name: configuration.timerName)
         }
     }
 }

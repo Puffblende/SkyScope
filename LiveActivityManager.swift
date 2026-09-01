@@ -3,7 +3,7 @@ import ActivityKit
 import Observation
 import CoreLocation
 
-/// Manages the single SkyScope Live Activity.
+/// Manages the single chocks Live Activity.
 ///
 /// The update flow is intentionally simple:
 ///   1. The data store's polling loop fetches new aircraft on the configured interval.
@@ -18,7 +18,7 @@ final class LiveActivityManager {
     static let shared = LiveActivityManager()
 
     private(set) var isRunning = false
-    private var liveActivity: Activity<SkyScopeActivityAttributes>?
+    private var liveActivity: Activity<ChocksActivityAttributes>?
 
     /// Set by ContentView whenever a new GPS fix arrives.
     var currentUserLocation: CLLocationCoordinate2D?
@@ -32,12 +32,14 @@ final class LiveActivityManager {
     func start(target: Aircraft?) async {
         let authInfo = ActivityAuthorizationInfo()
         guard authInfo.areActivitiesEnabled else {
+            #if DEBUG
             print("[LAM] ❌ Live Activities disabled")
+            #endif
             return
         }
 
         // End any stale activities first.
-        for existing in Activity<SkyScopeActivityAttributes>.activities {
+        for existing in Activity<ChocksActivityAttributes>.activities {
             await existing.end(
                 ActivityContent(state: existing.content.state, staleDate: nil),
                 dismissalPolicy: .immediate
@@ -45,24 +47,30 @@ final class LiveActivityManager {
         }
 
         guard let aircraft = target else {
+            #if DEBUG
             print("[LAM] ❌ No aircraft available to display")
+            #endif
             return
         }
 
-        let attributes = SkyScopeActivityAttributes(userLocation: "SkyScope")
+        let attributes = ChocksActivityAttributes(userLocation: "chocks")
         let initialState = await makeState(from: aircraft)
 
         do {
-            let activity = try Activity<SkyScopeActivityAttributes>.request(
+            let activity = try Activity<ChocksActivityAttributes>.request(
                 attributes: attributes,
                 content: .init(state: initialState, staleDate: Date.now.addingTimeInterval(5 * 60)),
                 pushType: nil
             )
             self.liveActivity = activity
             self.isRunning = true
+            #if DEBUG
             print("[LAM] ✅ Started with \(aircraft.displayName)")
+            #endif
         } catch {
+            #if DEBUG
             print("[LAM] ❌ Failed to start: \(error)")
+            #endif
         }
     }
 
@@ -77,7 +85,9 @@ final class LiveActivityManager {
         )
         self.liveActivity = nil
         self.isRunning = false
+        #if DEBUG
         print("[LAM] ✅ Stopped")
+        #endif
     }
 
     /// Called whenever the aircraft list changes. Pushes the new priority-resolved target to the
@@ -92,12 +102,14 @@ final class LiveActivityManager {
 
         let newState = await makeState(from: aircraft)
         await activity.update(ActivityContent(state: newState, staleDate: Date.now.addingTimeInterval(5 * 60)))
+        #if DEBUG
         print("[LAM] Updated → \(aircraft.displayName)")
+        #endif
     }
 
     // MARK: - State Formatting
 
-    private func makeState(from aircraft: Aircraft) async -> SkyScopeActivityAttributes.ContentValues {
+    private func makeState(from aircraft: Aircraft) async -> ChocksActivityAttributes.ContentValues {
         let origin = aircraft.originAirport
         let destination = aircraft.destinationAirport
         let typeCode = aircraft.aircraftType ?? ""
@@ -128,7 +140,7 @@ final class LiveActivityManager {
 
         let settings = SettingsStore.shared
 
-        return SkyScopeActivityAttributes.ContentValues(
+        return ChocksActivityAttributes.ContentValues(
             callsign: aircraft.displayName,
             altitude: formatAltitude(aircraft.altitudeMeters),
             speed: formatSpeed(aircraft.groundSpeedMps),

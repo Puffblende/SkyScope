@@ -2,10 +2,31 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+    <key>CFBundleDisplayName</key>
+    <string>chocks</string>
+    <key>CFBundleName</key>
+    <string>chocks</string>
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleURLName</key>
+            <string>com.chocks.app</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>chocks</string>
+            </array>
+        </dict>
+    </array>
     <key>BGTaskSchedulerPermittedIdentifiers</key>
     <array>
-        <string>com.skyscope.bgrefresh</string>
+        <string>com.chocks.bgrefresh</string>
     </array>
+    <key>NSCameraUsageDescription</key>
+    <string>chocks uses the camera to align nearby aircraft with the sky in AR.</string>
+    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>chocks uses your location to find aircraft nearby, including while the screen is locked so Live Activities can keep updating.</string>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>chocks uses your location to find aircraft flying near you.</string>
     <key>NSSupportsLiveActivitiesFrequentUpdates</key>
     <true/>
     <key>NSSupportsLiveActivities</key>

@@ -42,9 +42,7 @@ struct AircraftDetailSheet: View {
                 dragIndicator
                 headerSection
 
-                if aircraft.originAirport != nil || aircraft.destinationAirport != nil {
-                    routeCard
-                }
+                routeSection
 
                 if aircraft.airline != nil || aircraft.callsign != nil {
                     airlineCard
@@ -179,6 +177,15 @@ struct AircraftDetailSheet: View {
 
     // MARK: - Route Card
 
+    @ViewBuilder
+    private var routeSection: some View {
+        if aircraft.originAirport != nil || aircraft.destinationAirport != nil {
+            routeCard
+        } else {
+            routeUnavailableCard
+        }
+    }
+
     private var routeCard: some View {
         VStack(alignment: .leading, spacing: 10) {
             // Top row: ICAO codes + progress text centered
@@ -198,9 +205,7 @@ struct AircraftDetailSheet: View {
                                 .lineLimit(1)
                         }
                     } else {
-                        Text("—")
-                            .font(.system(.title2, design: .monospaced).bold())
-                            .foregroundStyle(.tertiary)
+                        missingRouteEndpoint(label: "Origin")
                     }
                 }
 
@@ -231,9 +236,7 @@ struct AircraftDetailSheet: View {
                                 .lineLimit(1)
                         }
                     } else {
-                        Text("—")
-                            .font(.system(.title2, design: .monospaced).bold())
-                            .foregroundStyle(.tertiary)
+                        missingRouteEndpoint(label: "Destination", alignment: .trailing)
                     }
                 }
             }
@@ -264,6 +267,44 @@ struct AircraftDetailSheet: View {
         .padding(16)
         .background(Color(.secondarySystemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 14))
+    }
+
+    private var routeUnavailableCard: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "arrow.left.arrow.right")
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundStyle(Color(.secondaryLabel))
+                .frame(width: 40, height: 40)
+                .background(Color(.tertiarySystemBackground), in: RoundedRectangle(cornerRadius: 10))
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text("Route not available")
+                    .font(.system(size: 17, weight: .semibold))
+                    .foregroundStyle(.primary)
+                Text("Origin and destination are not published by the available data sources.")
+                    .font(.system(size: 13))
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color(.secondarySystemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+    }
+
+    private func missingRouteEndpoint(
+        label: String,
+        alignment: HorizontalAlignment = .leading
+    ) -> some View {
+        VStack(alignment: alignment, spacing: 3) {
+            Text(label)
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(.secondary)
+            Text("Not published")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
+        }
     }
 
     // MARK: - Airline Card

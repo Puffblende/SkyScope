@@ -79,7 +79,7 @@ struct WhatsOverMeIntent: AppIntent {
 }
 
 /// Surface the intent in the Shortcuts gallery.
-struct SkyScopeShortcuts: AppShortcutsProvider {
+struct ChocksShortcuts: AppShortcutsProvider {
     static var appShortcuts: [AppShortcut] {
         AppShortcut(
             intent: WhatsOverMeIntent(),

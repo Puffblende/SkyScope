@@ -7,29 +7,33 @@ struct WeatherOverlayView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 1) {
+            VStack(spacing: 12) {
                 headerSection
-                skyProfileSection
-                windSection
-                visibilityPressureSection
+                cloudSummarySection
+                metricGrid
             }
+            .padding(.horizontal, 18)
+            .padding(.vertical, 16)
         }
         .background(Color(.systemGroupedBackground))
+        .scrollIndicators(.hidden)
     }
 
     // MARK: - Header
 
     private var headerSection: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: 14) {
             Image(systemName: weather.symbolName)
-                .font(.system(size: 46))
+                .font(.system(size: 40))
                 .symbolRenderingMode(.multicolor)
-                .frame(width: 56)
+                .frame(width: 48)
 
             VStack(alignment: .leading, spacing: 5) {
                 HStack(spacing: 8) {
                     Text(weather.description)
-                        .font(.title3.bold())
+                        .font(.headline.bold())
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.82)
 
                     let cond = weather.flightCondition
                     Text(cond.label)
@@ -40,136 +44,85 @@ struct WeatherOverlayView: View {
                         .foregroundStyle(cond.color)
                 }
 
-                Text(String(format: "%.1f°C", weather.temperature))
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                HStack(spacing: 8) {
+                    Text(String(format: "%.1f°C", weather.temperature))
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.primary)
 
-                Text("Updated \(weather.fetchedAt.formatted(.relative(presentation: .named)))")
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
+                    Text("Updated \(weather.fetchedAt.formatted(.relative(presentation: .named)))")
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                        .lineLimit(1)
+                }
             }
 
             Spacer()
         }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 18)
+        .padding(14)
         .background(Color(.secondarySystemGroupedBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 
-    // MARK: - Sky Profile
+    // MARK: - Cloud Summary
 
-    private var skyProfileSection: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Label("Cloud Layers", systemImage: "cloud.fill")
-                .font(.caption.bold())
-                .foregroundStyle(.secondary)
-                .textCase(.uppercase)
+    private var cloudSummarySection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Label("Clouds", systemImage: "cloud.fill")
+                    .font(.caption.bold())
+                    .foregroundStyle(.secondary)
+                    .textCase(.uppercase)
 
-            SkyProfileView(
+                Spacer()
+
+                Text("Total \(weather.cloudCoverTotal)% · \(oktaLabel(weather.cloudCoverTotal))")
+                    .font(.caption.bold().monospacedDigit())
+                    .foregroundStyle(cloudColor(weather.cloudCoverTotal))
+            }
+
+            CloudLayerStackView(
                 highCover: weather.cloudCoverHigh,
                 midCover: weather.cloudCoverMid,
                 lowCover: weather.cloudCoverLow
             )
-            .frame(height: 190)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-            .shadow(color: .black.opacity(0.28), radius: 8, y: 3)
-
-            HStack(spacing: 0) {
-                Text("Total cover: ")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                Text("\(weather.cloudCoverTotal)%  \(oktaLabel(weather.cloudCoverTotal))")
-                    .font(.caption.bold().monospacedDigit())
-                    .foregroundStyle(cloudColor(weather.cloudCoverTotal))
-            }
+            .frame(height: 104)
         }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 18)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(14)
         .background(Color(.secondarySystemGroupedBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 
-    // MARK: - Wind
+    // MARK: - Metrics
 
-    private var windSection: some View {
-        HStack(spacing: 24) {
-            ZStack {
-                Circle()
-                    .stroke(Color(.systemFill), lineWidth: 1.5)
-                    .frame(width: 64, height: 64)
-                Image(systemName: "arrow.up")
-                    .font(.system(size: 24, weight: .semibold))
-                    .foregroundStyle(Color.accentColor)
-                    .rotationEffect(.degrees(Double(weather.windDirection)))
-                Text("\(weather.windDirection)°")
-                    .font(.system(size: 9, weight: .semibold))
-                    .foregroundStyle(.secondary)
-                    .offset(y: 26)
-            }
+    private var metricGrid: some View {
+        HStack(alignment: .top, spacing: 10) {
+            WeatherMetricTile(
+                title: "Wind",
+                systemImage: "wind",
+                value: String(format: "%.1f kts", weather.windSpeed),
+                detail: "\(weather.windDirection)° · G \(String(format: "%.1f", weather.windGusts))"
+            )
 
-            VStack(alignment: .leading, spacing: 5) {
-                Label("Wind", systemImage: "wind")
-                    .font(.caption.bold())
-                    .foregroundStyle(.secondary)
-                    .textCase(.uppercase)
+            WeatherMetricTile(
+                title: "Visibility",
+                systemImage: "eye",
+                value: visibilityDisplay,
+                detail: "\(weather.flightCondition.label) minima",
+                detailColor: weather.flightCondition.color
+            )
 
-                Text(String(format: "%.1f kts", weather.windSpeed))
-                    .font(.title3.bold().monospacedDigit())
-
-                Text(String(format: "Gusts %.1f kts", weather.windGusts))
-                    .font(.subheadline.monospacedDigit())
-                    .foregroundStyle(.secondary)
-            }
-
-            Spacer()
+            WeatherMetricTile(
+                title: "QNH",
+                systemImage: "barometer",
+                value: "\(Int(weather.pressure.rounded())) hPa",
+                detail: String(format: "%.2f inHg", weather.pressure * 0.02953)
+            )
         }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 18)
-        .background(Color(.secondarySystemGroupedBackground))
     }
 
-    // MARK: - Visibility + QNH
-
-    private var visibilityPressureSection: some View {
-        HStack(alignment: .top, spacing: 0) {
-            VStack(alignment: .leading, spacing: 5) {
-                Label("Visibility", systemImage: "eye")
-                    .font(.caption.bold())
-                    .foregroundStyle(.secondary)
-                    .textCase(.uppercase)
-
-                let visKm = weather.visibility / 1_000
-                Text(visKm >= 10 ? ">10 km" : String(format: "%.1f km", visKm))
-                    .font(.title3.bold().monospacedDigit())
-
-                let cond = weather.flightCondition
-                Text(cond.label + " minima")
-                    .font(.caption)
-                    .foregroundStyle(cond.color)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-
-            Divider().frame(height: 68)
-
-            VStack(alignment: .leading, spacing: 5) {
-                Label("QNH", systemImage: "barometer")
-                    .font(.caption.bold())
-                    .foregroundStyle(.secondary)
-                    .textCase(.uppercase)
-
-                Text("\(Int(weather.pressure.rounded())) hPa")
-                    .font(.title3.bold().monospacedDigit())
-
-                Text(String(format: "%.2f inHg", weather.pressure * 0.02953))
-                    .font(.caption.monospacedDigit())
-                    .foregroundStyle(.secondary)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.leading, 20)
-        }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 18)
-        .background(Color(.secondarySystemGroupedBackground))
+    private var visibilityDisplay: String {
+        let visKm = weather.visibility / 1_000
+        return visKm >= 10 ? ">10 km" : String(format: "%.1f km", visKm)
     }
 
     // MARK: - Helpers
@@ -191,6 +144,178 @@ struct WeatherOverlayView: View {
         case 51...87:  return "BKN"
         default:       return "OVC"
         }
+    }
+}
+
+private struct CloudLayerStackView: View {
+    let highCover: Int
+    let midCover: Int
+    let lowCover: Int
+
+    private let horizontalPadding: CGFloat = 14
+    private let verticalPadding: CGFloat = 10
+    private let rowHeight: CGFloat = 28
+    private let labelWidth: CGFloat = 60
+
+    private struct Layer: Identifiable {
+        let id: String
+        let title: String
+        let altitude: String
+        let coverage: Int
+    }
+
+    private var layers: [Layer] {
+        [
+            Layer(id: "high", title: "High", altitude: "FL180+", coverage: highCover),
+            Layer(id: "mid", title: "Mid", altitude: "6.5-FL180", coverage: midCover),
+            Layer(id: "low", title: "Low", altitude: "<6.5k ft", coverage: lowCover),
+        ]
+    }
+
+    var body: some View {
+        ZStack {
+            VStack(spacing: 0) {
+                ForEach(layers) { layer in
+                    layerRow(layer)
+                }
+            }
+            .padding(.horizontal, horizontalPadding)
+            .padding(.vertical, verticalPadding)
+        }
+        .background(stackBackground)
+        .overlay(stackBorder)
+    }
+
+    private func layerRow(_ layer: Layer) -> some View {
+        HStack(spacing: 8) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(layer.title)
+                    .font(.caption2.weight(.bold))
+                    .foregroundStyle(.white.opacity(0.88))
+                Text(layer.altitude)
+                    .font(.system(size: 8, weight: .semibold, design: .monospaced))
+                    .foregroundStyle(.white.opacity(0.54))
+            }
+            .frame(width: labelWidth, alignment: .leading)
+
+            CloudCoverageBar(coverage: layer.coverage)
+
+            Text("\(layer.coverage)%")
+                .font(.caption2.bold().monospacedDigit())
+                .foregroundStyle(coverageColor(layer.coverage))
+                .frame(width: 34, alignment: .trailing)
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: rowHeight)
+    }
+
+    private var stackBackground: some View {
+        GeometryReader { proxy in
+            let separatorColor = Color.white.opacity(0.16)
+
+            ZStack {
+                LinearGradient(
+                    colors: [
+                        Color(red: 0.08, green: 0.17, blue: 0.36),
+                        Color(red: 0.20, green: 0.42, blue: 0.70),
+                        Color(red: 0.42, green: 0.65, blue: 0.84),
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+
+                Path { path in
+                    let startX = horizontalPadding + labelWidth + 12
+                    let endX = proxy.size.width - horizontalPadding
+                    for y in [verticalPadding + rowHeight, verticalPadding + rowHeight * 2] {
+                        path.move(to: CGPoint(x: startX, y: y))
+                        path.addLine(to: CGPoint(x: endX, y: y))
+                    }
+                }
+                .stroke(separatorColor, lineWidth: 0.5)
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    private var stackBorder: some View {
+        RoundedRectangle(cornerRadius: 12)
+            .stroke(Color.white.opacity(0.14), lineWidth: 1)
+    }
+
+    private func coverageColor(_ value: Int) -> Color {
+        switch value {
+        case 76...100: return .red
+        case 51...75:  return .orange
+        case 26...50:  return Color(red: 1.0, green: 0.75, blue: 0.0)
+        default:       return .green
+        }
+    }
+}
+
+private struct CloudCoverageBar: View {
+    let coverage: Int
+
+    var body: some View {
+        GeometryReader { proxy in
+            let fraction = CGFloat(min(max(coverage, 0), 100)) / 100
+
+            ZStack(alignment: .leading) {
+                Capsule()
+                    .fill(Color.white.opacity(0.13))
+
+                if fraction > 0 {
+                    Capsule()
+                        .fill(
+                            LinearGradient(
+                                colors: [
+                                    Color.white.opacity(0.80),
+                                    Color.white.opacity(0.34),
+                                ],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .frame(width: max(8, proxy.size.width * fraction))
+                        .opacity(0.45 + Double(fraction) * 0.45)
+                }
+            }
+        }
+        .frame(height: 9)
+    }
+}
+
+private struct WeatherMetricTile: View {
+    let title: String
+    let systemImage: String
+    let value: String
+    let detail: String
+    var valueColor: Color = .primary
+    var detailColor: Color = .secondary
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Label(title, systemImage: systemImage)
+                .font(.caption2.weight(.bold))
+                .foregroundStyle(.secondary)
+                .textCase(.uppercase)
+                .lineLimit(1)
+
+            Text(value)
+                .font(.headline.bold().monospacedDigit())
+                .foregroundStyle(valueColor)
+                .lineLimit(1)
+                .minimumScaleFactor(0.78)
+
+            Text(detail)
+                .font(.caption.monospacedDigit())
+                .foregroundStyle(detailColor)
+                .lineLimit(1)
+                .minimumScaleFactor(0.76)
+        }
+        .frame(maxWidth: .infinity, minHeight: 66, alignment: .topLeading)
+        .padding(10)
+        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 16))
     }
 }
 

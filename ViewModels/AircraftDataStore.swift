@@ -9,7 +9,7 @@ import SwiftData
 @MainActor
 @Observable
 final class AircraftDataStore {
-    /// Set by SkyScopeApp.init() so AppDelegate's BGTask handler can call refresh().
+    /// Set by ChocksApp.init() so AppDelegate's BGTask handler can call refresh().
     static weak var shared: AircraftDataStore?
 
     private(set) var aircraft: [Aircraft] = []
@@ -77,13 +77,17 @@ final class AircraftDataStore {
     func refresh() async {
         guard let coord = location.currentLocation?.coordinate else {
             lastError = "Waiting for location…"
+            #if DEBUG
             print("[STORE] ⚠️ No location yet — skipping fetch")
+            #endif
             DebugStore.shared.log("⚠️ No location — skipping fetch", isError: true)
             return
         }
         isLoading = true
         defer { isLoading = false }
+        #if DEBUG
         print("[STORE] 🔄 Fetching near \(String(format: "%.4f", coord.latitude)), \(String(format: "%.4f", coord.longitude)) radius \(Int(settings.radiusInMeters / 1_000)) km")
+        #endif
         do {
             let result = try await router.fetch(near: coord, radiusMeters: settings.radiusInMeters)
             let sortedResult = result.sorted { lhs, rhs in
@@ -100,14 +104,20 @@ final class AircraftDataStore {
                 existing.squawk = fresh.squawk
                 existing.onGround = fresh.onGround
                 existing.lastUpdate = fresh.lastUpdate
+                if let c = fresh.callsign { existing.callsign = c }
+                if let r = fresh.registration { existing.registration = r }
                 if let a = fresh.airline { existing.airline = a }
                 if let t = fresh.aircraftType { existing.aircraftType = t }
+                if let o = fresh.originAirport { existing.originAirport = o }
+                if let d = fresh.destinationAirport { existing.destinationAirport = d }
                 return existing
             }
             self.lastFetchAt = .now
             self.lastError = nil
             let provider = router.lastUsedProvider ?? "?"
+            #if DEBUG
             print("[STORE] ✅ \(self.aircraft.count) aircraft via \(provider)")
+            #endif
             DebugStore.shared.log("✅ \(self.aircraft.count) aircraft · \(provider)")
             // Clear follow if that aircraft is no longer in range.
             if let followedId = follow.followedId,
@@ -121,7 +131,9 @@ final class AircraftDataStore {
             }
         } catch {
             self.lastError = error.localizedDescription
+            #if DEBUG
             print("[STORE] ❌ Fetch failed: \(error.localizedDescription)")
+            #endif
             DebugStore.shared.log("❌ \(error.localizedDescription)", isError: true)
         }
     }

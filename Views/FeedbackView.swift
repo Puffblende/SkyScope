@@ -108,7 +108,7 @@ struct FeedbackView: View {
             Section {
                 EmptyView()
             } footer: {
-                Text("Device and app version are included automatically — \(UIDevice.current.model) · iOS \(UIDevice.current.systemVersion) · SkyScope \(appVersion).")
+                Text("Device and app version are included automatically — \(UIDevice.current.model) · iOS \(UIDevice.current.systemVersion) · chocks \(appVersion).")
             }
 
             // Submit
@@ -138,8 +138,8 @@ struct FeedbackView: View {
 
     private func submit() {
         // Build mailto URL and open it; fall back gracefully if Mail isn't available.
-        let subject = "SkyScope Feedback – \(category.rawValue)"
-        let device = "\(UIDevice.current.model) · iOS \(UIDevice.current.systemVersion) · SkyScope \(appVersion)"
+        let subject = "chocks Feedback – \(category.rawValue)"
+        let device = "\(UIDevice.current.model) · iOS \(UIDevice.current.systemVersion) · chocks \(appVersion)"
         let body = """
         \(message)
 

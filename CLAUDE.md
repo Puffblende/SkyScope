@@ -1,6 +1,6 @@
-SkyScope – Projektbriefing für Claude
-Was ist SkyScope?
-SkyScope ist eine iOS-App für Aviation-Enthusiasten (insbesondere Privatpiloten), die Echtzeit-Flugzeugdaten aus der näheren Umgebung des Users abruft und anzeigt. Die App existiert bereits als Desktop-Applikation (Python, Windows/macOS, ca. 90% fertig). Die iOS-App ist eine eigenständige, abgespeckte Mobile-Version – keine Synchronisation mit der Desktop-App nötig, da beide dieselben externen APIs nutzen.
+chocks – Projektbriefing für Claude
+Was ist chocks?
+chocks ist eine iOS-App für Aviation-Enthusiasten (insbesondere Privatpiloten), die Echtzeit-Flugzeugdaten aus der näheren Umgebung des Users abruft und anzeigt. Die App existiert bereits als Desktop-Applikation (Python, Windows/macOS, ca. 90% fertig). Die iOS-App ist eine eigenständige, abgespeckte Mobile-Version – keine Synchronisation mit der Desktop-App nötig, da beide dieselben externen APIs nutzen.
 
 
 Technischer Kontext
@@ -85,7 +85,7 @@ Flughäfen & Landeplätze anzeigen (OpenAIP / Open Flightmaps)
 NAVAIDs anzeigen (OpenAIP)
 Airways anzeigen (OpenAIP)
 4. Live Activity (Dynamic Island + Lock Screen)
-SkyScope Modus (Standard):
+chocks Modus (Standard):
 
 Startet automatisch beim App-Start (wenn Setting aktiv)
 Rotiert durch alle Flugzeuge im Radius
@@ -97,16 +97,16 @@ Favorit Modus:
 
 Wird aktiv wenn ein gespeicherter Favorit (Kennzeichen) erkannt wird
 Notification: "D-EVGK ist in der Luft – Favorit verfolgen?"
-Bei "Ja": SkyScope Live Activity stoppt, Favorit Live Activity startet
+Bei "Ja": chocks Live Activity stoppt, Favorit Live Activity startet
 Zeigt nur dieses eine Flugzeug mit allen Details
 Endet automatisch wenn Favorit landet → kurze "Gelandet"-Meldung
-Optional: Rückkehr zu SkyScope Modus nach Landung
+Optional: Rückkehr zu chocks Modus nach Landung
 5. Favoriten-Widget (Home Screen & Lock Screen)
 Da klassische Widgets keine Echtzeit-Daten unterstützen, zeigt das Widget ausschließlich Favoriten-Status:
 
 ┌─────────────────────────┐
 
-│ ✈️ SkyScope               │
+│ ✈️ chocks               │
 
 │ Aktuell kein Favorit    │
 
@@ -116,7 +116,7 @@ Da klassische Widgets keine Echtzeit-Daten unterstützen, zeigt das Widget aussc
 
 ┌─────────────────────────┐
 
-│ ✈️ SkyScope               │
+│ ✈️ chocks               │
 
 │ D-EVGK in der Luft! ✈️  │
 
@@ -137,7 +137,7 @@ Funktioniert auch wenn App im Hintergrund ist
 
 App Architektur
 Empfohlenes Pattern: MVVM
-SkyScope/
+chocks/
 
 ├── Models/
 
@@ -187,7 +187,7 @@ SkyScope/
 
 ├── LiveActivity/
 
-│   ├── SkyScopeActivityAttributes.swift
+│   ├── chocksActivityAttributes.swift
 
 │   └── FavoriteActivityAttributes.swift
 
@@ -239,6 +239,6 @@ Apple Developer Program: $99/Jahr
 Was noch offen ist
 Genaues Design / UI der Live Activity
 Welche Felder der User für die Live Activity konfigurieren kann
-App-Icon & Name final bestätigt (aktuell: "SkyScope")
+App-Icon & Name final bestätigt (aktuell: "chocks")
 App Store Screenshots & Beschreibung (später)
 

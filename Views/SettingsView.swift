@@ -1,12 +1,16 @@
 import SwiftUI
 import ActivityKit
+import AVFoundation
 import UIKit
 
 struct SettingsView: View {
     @Environment(SettingsStore.self) private var settings
     @Environment(AircraftDataStore.self) private var dataStore
+    @Environment(ARPermissionStore.self) private var arPermission
+    @Environment(\.scenePhase) private var scenePhase
 
     @State private var showRefreshInfo = false
+    @State private var pendingAREnableAfterSettings = false
     @State private var versionTapTimes: [Date] = []
 
     var body: some View {
@@ -46,6 +50,9 @@ struct SettingsView: View {
                     .padding(.bottom, 12)
 
                     ConeColorCard(settings: settings)
+                        .padding(.bottom, 24)
+
+                    arSettingsSection
                         .padding(.bottom, 24)
 
                     // MARK: Units
@@ -313,9 +320,21 @@ struct SettingsView: View {
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.large)
         }
+        .onAppear {
+            refreshARPermissionState()
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active {
+                refreshARPermissionState()
+            }
+        }
+        .onChange(of: arPermission.cameraStatus) { _, _ in
+            reconcileARPermissionState()
+        }
     }
 
     private func handleVersionTap() {
+        #if DEBUG
         let now = Date.now
         versionTapTimes.append(now)
         versionTapTimes = versionTapTimes.filter { now.timeIntervalSince($0) < 10 }
@@ -323,12 +342,234 @@ struct SettingsView: View {
         versionTapTimes = []
         DebugStore.shared.toggle()
         UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
+        #endif
     }
 
     private var appVersion: String {
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
         let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
         return "\(version) (\(build))"
+    }
+
+    // MARK: - Augmented Reality
+
+    private var arSettingsSection: some View {
+        VStack(spacing: 0) {
+            SectionHeader(title: "Augmented Reality")
+            GroupedCard {
+                VStack(spacing: 0) {
+                    HStack(spacing: 12) {
+                        Image(systemName: "arkit")
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundStyle(Color.accentColor)
+                            .frame(width: 34, height: 34)
+                            .background(Color.accentColor.opacity(0.12), in: Circle())
+
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text("Sky View AR")
+                                .font(.system(size: 17, weight: .semibold))
+                                .foregroundStyle(.primary)
+                            Text("Camera images stay on your device and are never stored or uploaded.")
+                                .font(.system(size: 13))
+                                .foregroundStyle(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+
+                        Spacer(minLength: 12)
+                        arStatusBadge
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 14)
+
+                    Divider().padding(.leading, 16)
+
+                    arSettingsControl
+                }
+            }
+        }
+    }
+
+    private var arStatusBadge: some View {
+        Text(arStatusText)
+            .font(.system(size: 12, weight: .semibold))
+            .foregroundStyle(arStatusColor)
+            .padding(.horizontal, 9)
+            .padding(.vertical, 5)
+            .background(arStatusColor.opacity(0.12), in: Capsule())
+    }
+
+    @ViewBuilder
+    private var arSettingsControl: some View {
+        if !arPermission.isARSupported {
+            ARSettingsMessageRow(
+                title: "Unavailable on this device",
+                message: "Sky View needs AR world tracking support."
+            )
+        } else {
+            switch arPermission.cameraStatus {
+            case .authorized:
+                HStack {
+                    Text("Show AR button on map")
+                        .font(.system(size: 17))
+                    Spacer()
+                    Toggle("", isOn: Binding(
+                        get: { settings.arModeEnabled },
+                        set: { settings.arModeEnabled = $0 }
+                    ))
+                    .labelsHidden()
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 11)
+            case .notDetermined:
+                Button {
+                    Task { await enableARFromSettings() }
+                } label: {
+                    ARSettingsActionRow(
+                        title: "Enable Camera Access",
+                        message: "iOS will ask for camera permission before the AR button appears.",
+                        systemImage: "camera"
+                    )
+                }
+                .buttonStyle(.plain)
+            case .denied, .restricted:
+                Button {
+                    openCameraSettingsForAR()
+                } label: {
+                    ARSettingsActionRow(
+                        title: "Open iOS Settings",
+                        message: "Allow camera access there, then return to enable Sky View.",
+                        systemImage: "gearshape"
+                    )
+                }
+                .buttonStyle(.plain)
+            @unknown default:
+                ARSettingsMessageRow(
+                    title: "Camera status unknown",
+                    message: "Sky View is inactive until camera access can be checked."
+                )
+            }
+        }
+    }
+
+    private var arStatusText: String {
+        guard arPermission.isARSupported else { return "Unavailable" }
+
+        switch arPermission.cameraStatus {
+        case .authorized:
+            return settings.arModeEnabled ? "Enabled" : "Inactive"
+        case .notDetermined:
+            return "Inactive"
+        case .denied, .restricted:
+            return "Permission Needed"
+        @unknown default:
+            return "Inactive"
+        }
+    }
+
+    private var arStatusColor: Color {
+        guard arPermission.isARSupported else { return Color(.secondaryLabel) }
+
+        switch arPermission.cameraStatus {
+        case .authorized:
+            return settings.arModeEnabled ? .green : Color(.secondaryLabel)
+        case .notDetermined:
+            return .orange
+        case .denied, .restricted:
+            return .red
+        @unknown default:
+            return Color(.secondaryLabel)
+        }
+    }
+
+    private func refreshARPermissionState() {
+        arPermission.refreshCameraStatus()
+
+        if pendingAREnableAfterSettings && arPermission.cameraStatus == .authorized {
+            settings.arModeEnabled = true
+            pendingAREnableAfterSettings = false
+        }
+
+        reconcileARPermissionState()
+    }
+
+    private func reconcileARPermissionState() {
+        guard arPermission.isARSupported else {
+            settings.arModeEnabled = false
+            return
+        }
+
+        switch arPermission.cameraStatus {
+        case .authorized, .notDetermined:
+            break
+        case .denied, .restricted:
+            settings.arModeEnabled = false
+            pendingAREnableAfterSettings = false
+        @unknown default:
+            settings.arModeEnabled = false
+        }
+    }
+
+    private func enableARFromSettings() async {
+        let granted = await arPermission.requestCameraAccess()
+        settings.arModeEnabled = granted
+    }
+
+    private func openCameraSettingsForAR() {
+        pendingAREnableAfterSettings = true
+        settings.arModeEnabled = false
+        arPermission.openAppSettings()
+    }
+}
+
+private struct ARSettingsActionRow: View {
+    let title: String
+    let message: String
+    let systemImage: String
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: systemImage)
+                .font(.system(size: 17, weight: .semibold))
+                .foregroundStyle(Color.accentColor)
+                .frame(width: 28)
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title)
+                    .font(.system(size: 17))
+                    .foregroundStyle(Color.accentColor)
+                Text(message)
+                    .font(.system(size: 13))
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Spacer(minLength: 8)
+            Image(systemName: "chevron.right")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(Color(.tertiaryLabel))
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+    }
+}
+
+private struct ARSettingsMessageRow: View {
+    let title: String
+    let message: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(title)
+                .font(.system(size: 17))
+                .foregroundStyle(.primary)
+            Text(message)
+                .font(.system(size: 13))
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
     }
 }
 

@@ -57,7 +57,9 @@ final class APIRouter {
             lastError = nil
             return result
         } catch {
+            #if DEBUG
             print("[ROUTER] airplanes.live failed: \(error)")
+            #endif
         }
 
         // Secondary: adsb.lol — identical JSON format, independent community feed
@@ -68,7 +70,9 @@ final class APIRouter {
             lastError = nil
             return result
         } catch {
+            #if DEBUG
             print("[ROUTER] adsb.lol failed: \(error)")
+            #endif
         }
 
         // Fallback: OpenSky Network
@@ -82,7 +86,9 @@ final class APIRouter {
             lastError = nil
             return result
         } catch {
+            #if DEBUG
             print("[ROUTER] OpenSky failed: \(error)")
+            #endif
             lastError = "OpenSky: \(error.localizedDescription)"
         }
 

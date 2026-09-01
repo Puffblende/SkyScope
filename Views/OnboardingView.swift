@@ -1,17 +1,21 @@
 import SwiftUI
+import AVFoundation
 import CoreLocation
 import UIKit
 import UserNotifications
 
-/// Five-slide first-launch onboarding. Shown once; dismissed permanently when complete.
+/// Six-slide first-launch onboarding. Shown once; dismissed permanently when complete.
 struct OnboardingView: View {
     let onComplete: () -> Void
 
+    @Environment(SettingsStore.self) private var settings
     @Environment(LocationService.self) private var location
+    @Environment(ARPermissionStore.self) private var arPermission
 
     @State private var step = 0
     @State private var isWaitingForLocation = false
-    private let total = 5
+    @State private var isWaitingForCamera = false
+    private let total = 6
 
     var body: some View {
         ZStack {
@@ -22,12 +26,13 @@ struct OnboardingView: View {
                 slide2.tag(2)
                 slide3.tag(3)
                 slide4.tag(4)
+                slide5.tag(5)
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
             .ignoresSafeArea()
 
             // Back chevron — only from slide 1 onward, hidden while permission dialog is pending.
-            if step > 0 && !isWaitingForLocation {
+            if step > 0 && !isWaitingForPermission {
                 Button {
                     withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) { step -= 1 }
                 } label: {
@@ -63,7 +68,7 @@ struct OnboardingView: View {
                     handleContinue()
                 } label: {
                     Group {
-                        if isWaitingForLocation {
+                        if isWaitingForPermission {
                             ProgressView()
                                 .tint(buttonTextColor)
                         } else {
@@ -73,11 +78,26 @@ struct OnboardingView: View {
                         }
                     }
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 15)
-                    .background(Color.white, in: RoundedRectangle(cornerRadius: 14))
+                    .padding(.vertical, step == 3 ? 17 : 15)
+                    .background(Color.white, in: RoundedRectangle(cornerRadius: step == 3 ? 24 : 14))
                 }
                 .buttonStyle(.plain)
-                .disabled(isWaitingForLocation)
+                .disabled(isWaitingForPermission)
+
+                if step == 3 && arPermission.isARSupported && arPermission.cameraStatus == .notDetermined && !isWaitingForCamera {
+                    Button {
+                        skipAR()
+                    } label: {
+                        Text("Maybe later")
+                            .font(.system(size: 17, weight: .semibold))
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 17)
+                            .background(Color.white.opacity(0.18), in: RoundedRectangle(cornerRadius: 24))
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.top, 20)
+                }
             }
             .padding(.horizontal, 28)
             .padding(.top, 12)
@@ -105,6 +125,8 @@ struct OnboardingView: View {
                 location.requestAuthorization()
             }
         case 3:
+            requestARAccess()
+        case 4:
             // Live Activity slide: request notification permission, then advance.
             Task {
                 let granted = (try? await UNUserNotificationCenter.current()
@@ -121,6 +143,27 @@ struct OnboardingView: View {
         }
     }
 
+    private func requestARAccess() {
+        guard arPermission.isARSupported else {
+            settings.arModeEnabled = false
+            advance()
+            return
+        }
+
+        Task {
+            isWaitingForCamera = true
+            let granted = await arPermission.requestCameraAccess()
+            settings.arModeEnabled = granted
+            isWaitingForCamera = false
+            advance()
+        }
+    }
+
+    private func skipAR() {
+        settings.arModeEnabled = false
+        advance()
+    }
+
     private func advance() {
         withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
             if step >= total - 1 { onComplete() } else { step += 1 }
@@ -130,7 +173,14 @@ struct OnboardingView: View {
     // MARK: - Button label
 
     private var buttonLabel: String {
-        step == total - 1 ? "Get Started" : "Continue"
+        if step == 3 && arPermission.isARSupported && arPermission.cameraStatus != .denied && arPermission.cameraStatus != .restricted {
+            return "Yes, I want to use it"
+        }
+        return step == total - 1 ? "Get Started" : "Continue"
+    }
+
+    private var isWaitingForPermission: Bool {
+        isWaitingForLocation || isWaitingForCamera
     }
 
     // MARK: - Button text colour (dark shade matching each slide's background)
@@ -140,7 +190,8 @@ struct OnboardingView: View {
         case 0: return Color(red: 0.043, green: 0.118, blue: 0.239)  // Location: dark blue
         case 1: return Color(red: 0.027, green: 0.231, blue: 0.227)  // Radius: dark teal
         case 2: return Color(red: 0.078, green: 0.157, blue: 0.314)  // Map: mid blue
-        case 3: return Color(red: 0.020, green: 0.027, blue: 0.051)  // Live Activity: near-black
+        case 3: return Color(red: 0.055, green: 0.184, blue: 0.212)  // AR: deep cyan
+        case 4: return Color(red: 0.020, green: 0.027, blue: 0.051)  // Live Activity: near-black
         default: return Color(red: 0.169, green: 0.063, blue: 0.333) // Favorites: dark purple
         }
     }
@@ -151,7 +202,7 @@ struct OnboardingView: View {
         shell(
             colors: [Color(hex: "0b1e3d"), Color(hex: "16386b"), Color(hex: "1f4d8f")],
             title: "Location Access",
-            body: "SkyScope needs your location to find aircraft within your search radius and center the map on you. Foreground access is enough — background access is only used if you turn on Live Activity tracking."
+            body: "chocks needs your location to find aircraft within your search radius and center the map on you. Foreground access is enough — background access is only used if you turn on Live Activity tracking."
         ) { RadarIllustration() }
     }
 
@@ -159,7 +210,7 @@ struct OnboardingView: View {
         shell(
             colors: [Color(hex: "073b3a"), Color(hex: "0f5c56"), Color(hex: "1a8f7b")],
             title: "Search Radius & Units",
-            body: "Set how far SkyScope looks for aircraft — default is 50 km (27 NM). Switch altitude, speed and distance between metric and imperial anytime in Settings."
+            body: "Set how far chocks looks for aircraft — default is 50 km (27 NM). Switch altitude, speed and distance between metric and imperial anytime in Settings."
         ) { OrbitIllustration() }
     }
 
@@ -173,17 +224,25 @@ struct OnboardingView: View {
 
     private var slide3: some View {
         shell(
-            colors: [Color(hex: "05070d"), Color(hex: "12151f"), Color(hex: "1c2333")],
-            title: "Live Activity",
-            body: "Track nearby aircraft from your Lock Screen and Dynamic Island. It switches to Favorite mode automatically when a tracked registration is airborne, and ends when it lands."
-        ) { IslandIllustration() }
+            colors: [Color(hex: "102238"), Color(hex: "1d4d60"), Color(hex: "2b8586")],
+            title: "AR Mode",
+            body: "Hold your phone up to the sky and chocks labels the aircraft you can see. This needs access to your camera — the image stays on your device and is never stored or uploaded."
+        ) { ARSkyIllustration() }
     }
 
     private var slide4: some View {
         shell(
+            colors: [Color(hex: "05070d"), Color(hex: "12151f"), Color(hex: "1c2333")],
+            title: "Live Activity",
+            body: "Track nearby aircraft from your Lock Screen and Dynamic Island. When a saved favorite is currently in range, chocks prioritizes it over the nearest aircraft."
+        ) { IslandIllustration() }
+    }
+
+    private var slide5: some View {
+        shell(
             colors: [Color(hex: "2b1055"), Color(hex: "7b2ff7"), Color(hex: "e08a3e")],
             title: "Favorites",
-            body: "Save registrations you want to track — your club's aircraft, for example. You'll get a heads-up the moment one takes off."
+            body: "Save registrations you want to track — your club's aircraft, for example. When one appears nearby, chocks can prioritize it on the map and Live Activity."
         ) { FavoritesIllustration() }
     }
 
@@ -334,7 +393,89 @@ private struct PlaneIllustration: View {
     }
 }
 
-// MARK: - Slide 3: Live Activity card (matches the design)
+// MARK: - Slide 3: Sky View AR
+
+private struct ARSkyIllustration: View {
+    @State private var lift: CGFloat = 0
+    @State private var guideOpacity: Double = 0.24
+
+    var body: some View {
+        ZStack {
+            Path { path in
+                path.move(to: CGPoint(x: 44, y: 96))
+                path.addLine(to: CGPoint(x: 112, y: 128))
+                path.move(to: CGPoint(x: 196, y: 96))
+                path.addLine(to: CGPoint(x: 128, y: 128))
+            }
+            .stroke(Color.white.opacity(0.08), lineWidth: 2)
+
+            Image(systemName: "airplane")
+                .font(.system(size: 46, weight: .light))
+                .foregroundStyle(Color.white.opacity(0.46))
+                .rotationEffect(.degrees(-30))
+                .offset(x: 0, y: -72 + lift)
+
+            ZStack {
+                RoundedRectangle(cornerRadius: 28)
+                    .stroke(Color.white.opacity(0.86), lineWidth: 3)
+                    .frame(width: 100, height: 146)
+
+                Capsule()
+                    .fill(Color.white.opacity(0.48))
+                    .frame(width: 52, height: 7)
+                    .offset(y: -60)
+
+                Image(systemName: "viewfinder")
+                    .font(.system(size: 66, weight: .ultraLight))
+                    .foregroundStyle(Color(red: 0.54, green: 0.91, blue: 1.0).opacity(0.92))
+                    .offset(y: -6)
+
+                Image(systemName: "airplane")
+                    .font(.system(size: 28, weight: .light))
+                    .foregroundStyle(.white)
+                    .rotationEffect(.degrees(-26))
+                    .offset(y: -4 + lift)
+
+                VStack(alignment: .leading, spacing: 6) {
+                    Capsule()
+                        .fill(.white)
+                        .frame(width: 68, height: 6)
+                    Capsule()
+                        .fill(Color.white.opacity(0.38))
+                        .frame(width: 86, height: 6)
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 9)
+                .background(Color.white.opacity(0.14), in: RoundedRectangle(cornerRadius: 10))
+                .offset(y: 48)
+            }
+
+            VStack(spacing: 4) {
+                Image(systemName: "airplane")
+                    .font(.system(size: 26, weight: .light))
+                    .foregroundStyle(.white)
+                    .rotationEffect(.degrees(-24))
+                    .offset(y: lift)
+                Capsule()
+                    .fill(Color.white.opacity(0.34))
+                    .frame(width: 16, height: 3)
+            }
+            .offset(y: -16)
+            .opacity(guideOpacity)
+        }
+        .frame(width: 240, height: 260)
+        .onAppear {
+            withAnimation(.easeInOut(duration: 2.7).repeatForever(autoreverses: true)) {
+                lift = -8
+            }
+            withAnimation(.easeInOut(duration: 1.6).repeatForever(autoreverses: true)) {
+                guideOpacity = 0.48
+            }
+        }
+    }
+}
+
+// MARK: - Slide 4: Live Activity card (matches the design)
 
 private struct IslandIllustration: View {
     @State private var glowOpacity: Double = 0.25
@@ -395,7 +536,7 @@ private struct IslandIllustration: View {
     }
 }
 
-// MARK: - Slide 4: Favorites star
+// MARK: - Slide 5: Favorites star
 
 private struct FavoritesIllustration: View {
     @State private var starScale: Double = 1.0

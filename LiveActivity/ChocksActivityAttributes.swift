@@ -1,7 +1,7 @@
 import ActivityKit
 import Foundation
 
-struct SkyScopeActivityAttributes: ActivityAttributes {
+struct ChocksActivityAttributes: ActivityAttributes {
     typealias ContentState = ContentValues
 
     struct ContentValues: Codable, Hashable {

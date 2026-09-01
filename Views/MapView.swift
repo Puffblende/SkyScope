@@ -2,6 +2,7 @@ import SwiftUI
 import MapKit
 import SwiftData
 import ActivityKit
+import AVFoundation
 
 // Reference-type camera state so continuous camera-change callbacks don't trigger SwiftUI re-renders.
 private final class MapCameraState {
@@ -17,6 +18,7 @@ struct MapView: View {
     @Environment(AircraftDataStore.self) private var dataStore
     @Environment(NavigationCoordinator.self) private var navigation
     @Environment(FollowStore.self) private var follow
+    @Environment(ARPermissionStore.self) private var arPermission
     @Query private var favorites: [Favorite]
 
     @State private var cameraPosition: MapCameraPosition = .automatic
@@ -45,6 +47,10 @@ struct MapView: View {
     @State private var showWeather = false
     @State private var weather: WeatherData?
     @State private var weatherLoading = false
+    @State private var showAR = false
+    @State private var currentPlaceName: String?
+    @State private var lastReverseGeocodedLocation: CLLocation?
+    @State private var reverseGeocodeTask: Task<Void, Never>?
 
     private var favoriteRegistrations: Set<String> {
         Set(favorites.map { $0.registration })
@@ -131,7 +137,7 @@ struct MapView: View {
                 })
             } // TimelineView
 
-            .navigationTitle("SkyScope")
+            .navigationTitle("Map")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -147,40 +153,30 @@ struct MapView: View {
                     .disabled(dataStore.isLoading)
                 }
             }
+            .toolbar(.hidden, for: .navigationBar)
             .overlay(alignment: .top) {
-                VStack(spacing: 4) {
-                    if !headingModeEnabled, location.heading != nil {
-                        CompassStripView(heading: compassHeading)
-                            .transition(.opacity.combined(with: .move(edge: .top)))
-                    }
-                    if let error = dataStore.lastError ?? location.lastError {
-                        Text(error)
-                            .font(.caption)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 6)
-                            .background(.thinMaterial, in: .capsule)
-                    }
-                }
-                .padding(.top, 6)
-                .animation(.easeInOut(duration: 0.3), value: headingModeEnabled)
+                mapTopOverlay
             }
             .overlay(alignment: .bottom) {
                 RadiusSliderPanel()
                     .padding(.bottom, 16)
             }
-            .overlay(alignment: .topTrailing) {
+            .overlay(alignment: .trailing) {
                 VStack(spacing: 0) {
                     mapStyleButton
                     Divider().frame(width: 44)
                     headingModeButton
                     Divider().frame(width: 44)
                     fitRadiusButton
+                    if canShowARButton {
+                        Divider().frame(width: 44)
+                        arButton
+                    }
                     Divider().frame(width: 44)
                     weatherButton
                 }
                 .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
                 .shadow(color: .black.opacity(0.12), radius: 6, y: 1)
-                .padding(.top, 60)
                 .padding(.trailing, 16)
             }
             .sheet(item: $selectedAircraft) { aircraft in
@@ -199,18 +195,29 @@ struct MapView: View {
                         .presentationDetents([.medium])
                 } else if let w = weather {
                     WeatherOverlayView(weather: w)
-                        .presentationDetents([.medium, .large])
+                        .presentationDetents([.height(396)])
                         .presentationDragIndicator(.visible)
                 } else {
                     ContentUnavailableView("Weather Unavailable", systemImage: "cloud.slash")
                         .presentationDetents([.medium])
                 }
             }
+            .fullScreenCover(isPresented: $showAR) {
+                ARAircraftView()
+                    .environment(settings)
+                    .environment(location)
+                    .environment(dataStore)
+                    .environment(navigation)
+                    .environment(follow)
+                    .environment(arPermission)
+            }
             // Frame to radius on every appear — tab switch, cold start.
             // Small delay lets MapKit complete its initial layout before we override the region.
             .onAppear {
+                arPermission.refreshCameraStatus()
                 location.startUpdatingHeading()
                 if let h = location.heading { compassHeading = h.trueHeading }
+                updatePlaceName(for: location.currentLocation)
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
                     if let coord = location.currentLocation?.coordinate {
                         frameRegionAroundUser(coord)
@@ -220,6 +227,7 @@ struct MapView: View {
             }
             .onDisappear {
                 location.stopUpdatingHeading()
+                reverseGeocodeTask?.cancel()
             }
             // Re-frame when coming back to the foreground.
             .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
@@ -231,6 +239,7 @@ struct MapView: View {
             }
             // Cold start: location wasn't available on appear, frame on first fix.
             .onChange(of: location.currentLocation) { _, newValue in
+                updatePlaceName(for: newValue)
                 guard !hasAutoFramedOnFirstLoad, let coord = newValue?.coordinate else { return }
                 frameRegionAroundUser(coord)
                 hasAutoFramedOnFirstLoad = true
@@ -334,6 +343,73 @@ struct MapView: View {
         } // NavigationStack
     }
 
+    private var mapTopOverlay: some View {
+        ZStack(alignment: .top) {
+            LinearGradient(
+                colors: [
+                    Color.black.opacity(0.62),
+                    Color.black.opacity(0.28),
+                    Color.black.opacity(0.0),
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .frame(height: 176)
+            .ignoresSafeArea(edges: .top)
+
+            VStack(spacing: 8) {
+                HStack(alignment: .top) {
+                    VStack(alignment: .leading, spacing: 7) {
+                        Text("Map")
+                            .font(.system(size: 36, weight: .bold))
+                            .foregroundStyle(.white)
+                            .lineLimit(1)
+
+                        HStack(spacing: 9) {
+                            Circle()
+                                .fill(Color.green)
+                                .frame(width: 8, height: 8)
+                            Text(mapSubtitle)
+                                .font(.system(size: 17, weight: .semibold))
+                                .foregroundStyle(.white.opacity(0.62))
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.8)
+                        }
+                    }
+
+                    Spacer(minLength: 24)
+                }
+
+                if !headingModeEnabled, location.heading != nil {
+                    CompassStripView(heading: compassHeading)
+                        .transition(.opacity.combined(with: .move(edge: .top)))
+                }
+
+                if let error = dataStore.lastError ?? location.lastError {
+                    Text(error)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(Color.black.opacity(0.54), in: Capsule())
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 8)
+            .animation(.easeInOut(duration: 0.3), value: headingModeEnabled)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .allowsHitTesting(false)
+    }
+
+    private var mapSubtitle: String {
+        let aircraftText = dataStore.aircraft.count == 1 ? "1 aircraft" : "\(dataStore.aircraft.count) aircraft"
+        guard let currentPlaceName, !currentPlaceName.isEmpty else {
+            return "\(aircraftText) nearby"
+        }
+        return "\(aircraftText) · \(currentPlaceName)"
+    }
+
     /// Tries to match `navigation.pendingDeepLinkCallsign` against the current aircraft list.
     /// Pans the map and opens the detail sheet on a match; leaves the callsign pending if
     /// the list is empty (will be retried by the onChange above).
@@ -356,7 +432,52 @@ struct MapView: View {
         navigation.pendingDeepLinkCallsign = nil
     }
 
+    private func updatePlaceName(for newLocation: CLLocation?) {
+        guard let newLocation else {
+            currentPlaceName = nil
+            lastReverseGeocodedLocation = nil
+            reverseGeocodeTask?.cancel()
+            return
+        }
+
+        if let lastReverseGeocodedLocation,
+           newLocation.distance(from: lastReverseGeocodedLocation) < 5_000 {
+            return
+        }
+
+        lastReverseGeocodedLocation = newLocation
+        reverseGeocodeTask?.cancel()
+        reverseGeocodeTask = Task {
+            var name: String?
+            if #available(iOS 18, *) {
+                if let request = MKReverseGeocodingRequest(location: newLocation) {
+                    let mapItems = try? await request.mapItems
+                    let item = mapItems?.first
+                    name = item?.addressRepresentations?.cityName
+                        ?? item?.name
+                        ?? item?.addressRepresentations?.regionName
+                }
+            } else {
+                let geocoder = CLGeocoder()
+                if let placemarks = try? await geocoder.reverseGeocodeLocation(newLocation) {
+                    name = placemarks.first?.locality ?? placemarks.first?.administrativeArea
+                }
+            }
+
+            guard !Task.isCancelled else { return }
+            await MainActor.run {
+                currentPlaceName = name
+            }
+        }
+    }
+
     private var stackButtonStyle: some View { EmptyView() }
+
+    private var canShowARButton: Bool {
+        settings.arModeEnabled
+        && arPermission.isARSupported
+        && arPermission.cameraStatus == .authorized
+    }
 
     /// Map style cycle button (part of right-side stack).
     private var mapStyleButton: some View {
@@ -407,6 +528,20 @@ struct MapView: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel("Fit radius to screen")
+    }
+
+    /// Opens the full-screen augmented reality aircraft view.
+    private var arButton: some View {
+        Button {
+            showAR = true
+        } label: {
+            Image(systemName: "arkit")
+                .font(.system(size: 18))
+                .foregroundStyle(Color.accentColor)
+                .frame(width: 44, height: 40)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Open Sky View AR")
     }
 
     /// Weather button (part of right-side stack). Fetches only on tap.
@@ -627,48 +762,89 @@ private struct ConeShape: Shape {
 private struct CompassStripView: View {
     var heading: Double
 
-    private let pixelsPerDegree: CGFloat = 2.2
-    private let stripWidth: CGFloat = 180
+    private let pixelsPerDegree: CGFloat = 4.8
 
-    private static let ticks: [(label: String, degree: Double, isMajor: Bool)] = {
-        let base: [(String, Double, Bool)] = [
-            ("N", 0, true), ("NE", 45, false), ("E", 90, true),
-            ("SE", 135, false), ("S", 180, true), ("SW", 225, false),
-            ("W", 270, true), ("NW", 315, false)
+    private struct Tick: Identifiable {
+        let degree: Double
+        let label: String?
+
+        var id: String {
+            "\(degree)-\(label ?? "tick")"
+        }
+
+        var isMajor: Bool {
+            label != nil
+        }
+    }
+
+    private static let ticks: [Tick] = {
+        var ticks: [Tick] = []
+        let labels: [Int: String] = [
+            0: "N",
+            45: "NE",
+            90: "E",
+            135: "SE",
+            180: "S",
+            225: "SW",
+            270: "W",
+            315: "NW",
         ]
-        return base.map { ($0.0, $0.1 - 360, $0.2) }
-             + base
-             + base.map { ($0.0, $0.1 + 360, $0.2) }
+
+        for cycle in -2...2 {
+            for degree in stride(from: 0.0, to: 360.0, by: 22.5) {
+                let normalized = Int(degree.rounded()) % 360
+                ticks.append(Tick(
+                    degree: degree + Double(cycle * 360),
+                    label: labels[normalized]
+                ))
+            }
+        }
+
+        return ticks
     }()
 
     var body: some View {
-        VStack(spacing: 2) {
-            Image(systemName: "arrowtriangle.down.fill")
-                .font(.system(size: 7))
-                .foregroundStyle(.white)
-
+        GeometryReader { proxy in
+            let width = proxy.size.width
             ZStack {
-                ForEach(Array(Self.ticks.enumerated()), id: \.offset) { _, tick in
+                ForEach(Self.ticks) { tick in
                     let xOff = xOffset(for: tick.degree)
-                    Text(tick.label)
-                        .font(.system(size: tick.isMajor ? 11 : 9,
-                                      weight: tick.isMajor ? .semibold : .regular))
-                        .foregroundStyle(
-                            tick.label == "N"
-                                ? Color.red
-                                : Color.white.opacity(tick.isMajor ? 1 : 0.65)
-                        )
-                        .offset(x: xOff)
-                        .opacity(abs(xOff) < stripWidth / 2 + 24 ? 1 : 0)
+                    VStack(spacing: 7) {
+                        if let label = tick.label {
+                            Text(label)
+                                .font(.system(size: label.count == 1 ? 13 : 12, weight: .semibold))
+                                .foregroundStyle(label == "N" ? Color.red : Color.white.opacity(0.92))
+                                .frame(height: 16)
+                        } else {
+                            Color.clear
+                                .frame(height: 16)
+                        }
+
+                        RoundedRectangle(cornerRadius: 1)
+                            .fill(tickColor(tick))
+                            .frame(width: tick.isMajor ? 2 : 1, height: tick.isMajor ? 17 : 10)
+                    }
+                    .position(x: width / 2 + xOff, y: 22)
+                    .opacity(abs(xOff) < width / 2 + 32 ? 1 : 0)
                 }
+
+                Image(systemName: "arrowtriangle.up.fill")
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundStyle(Color.accentColor)
+                    .position(x: width / 2, y: 47)
             }
             .animation(.linear(duration: 0.1), value: heading)
-            .frame(width: stripWidth, height: 14)
             .clipped()
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 6)
-        .background(.ultraThinMaterial, in: Capsule())
+        .frame(height: 58)
+        .accessibilityHidden(true)
+    }
+
+    private func tickColor(_ tick: Tick) -> Color {
+        if tick.label == "N" {
+            return Color.red.opacity(0.88)
+        }
+        return Color.white.opacity(tick.isMajor ? 0.80 : 0.36)
     }
 
     private func xOffset(for degree: Double) -> CGFloat {
@@ -680,9 +856,19 @@ private struct CompassStripView: View {
 }
 
 #Preview {
+    let settings = SettingsStore.shared
+    let location = LocationService()
+    let follow = FollowStore()
+
     MapView()
-        .environment(SettingsStore.shared)
-        .environment(LocationService())
-        .environment(APIRouter(settings: SettingsStore.shared))
+        .environment(settings)
+        .environment(location)
+        .environment(APIRouter(settings: settings))
+        .environment(AircraftDataStore(router: APIRouter(settings: settings),
+                                       settings: settings,
+                                       location: location,
+                                       follow: follow))
         .environment(NavigationCoordinator())
+        .environment(follow)
+        .environment(ARPermissionStore())
 }

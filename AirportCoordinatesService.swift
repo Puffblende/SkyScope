@@ -23,16 +23,20 @@ actor AirportCoordinatesService {
                 longitude: airport.longitude
             )
             cache[icaoCode] = coord
+            #if DEBUG
             print("[AIRPORT] Fetched \(icaoCode): \(airport.latitude), \(airport.longitude)")
+            #endif
             return coord
         } catch {
+            #if DEBUG
             print("[AIRPORT] Failed \(icaoCode): \(error.localizedDescription)")
+            #endif
             return nil
         }
     }
 }
 
-private struct AirportResponse: Decodable {
+private nonisolated struct AirportResponse: Decodable {
     let latitude: Double
     let longitude: Double
 }

@@ -1,6 +1,6 @@
 //
 //  AppIntent.swift
-//  SkyScope Widget
+//  chocks Widget
 //
 //  Created by Dennis Kiefer on 28.05.26.
 //

@@ -220,8 +220,8 @@ struct ListView: View {
     private func routeLabel(for aircraft: Aircraft) -> String? {
         switch (aircraft.originAirport, aircraft.destinationAirport) {
         case let (origin?, destination?): return "\(origin) → \(destination)"
-        case let (origin?, nil): return "\(origin) → ?"
-        case let (nil, destination?): return "? → \(destination)"
+        case let (origin?, nil): return "From \(origin) · destination not published"
+        case let (nil, destination?): return "To \(destination) · origin not published"
         default: return nil
         }
     }

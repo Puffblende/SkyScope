@@ -7,7 +7,7 @@ struct HelpView: View {
     var body: some View {
         List {
             Section {
-                Text("Common questions about SkyScope.")
+                Text("Common questions about chocks.")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .listRowBackground(Color.clear)
@@ -16,35 +16,46 @@ struct HelpView: View {
 
             Section("Setup") {
                 FAQItem(
-                    q: "Why does SkyScope need my location?",
+                    q: "Why does chocks need my location?",
                     a: "To find aircraft within your search radius and center the map on your position."
                 )
                 FAQItem(
                     q: "What permissions does the app need?",
-                    a: "Location while in use, and in the background only if Live Activity tracking is turned on."
+                    a: "Location while in use for nearby aircraft, camera only for Sky View AR, and background location only when Live Activity tracking is enabled."
                 )
                 FAQItem(
                     q: "How do I change my search radius?",
-                    a: "Settings → Search Radius. Default is 50 km / 27 NM, adjustable from 5–250."
+                    a: "Use the radius slider on the map. Default is 50 km / 27 NM, adjustable from 5–250."
                 )
             }
 
             Section("Data & Accuracy") {
                 FAQItem(
                     q: "Where does the flight data come from?",
-                    a: "FlightAware AeroAPI is the primary source. SkyScope falls back to OpenSky Network if FlightAware's daily free limit is exceeded."
+                    a: "Nearby aircraft positions come from community ADS-B sources: airplanes.live first, adsb.lol second, then OpenSky as fallback. Routes and aircraft metadata are enriched best-effort from ADSBDB."
                 )
                 FAQItem(
                     q: "Do I need an API key?",
-                    a: "Only for FlightAware, added in Settings → Data Sources. Without one, SkyScope uses OpenSky anonymously with less detail."
+                    a: "No. Optional OpenSky credentials can be added in Settings for higher OpenSky limits, but the app works without an account."
                 )
                 FAQItem(
                     q: "An aircraft is missing or shows outdated info. Why?",
-                    a: "Aircraft with transponders off or outside ADS-B coverage won't appear. Try a wider radius or a shorter refresh interval."
+                    a: "Aircraft with transponders off, blocked identifiers, missing route publications or weak ADS-B coverage may be incomplete or absent."
                 )
                 FAQItem(
                     q: "How often does data refresh?",
-                    a: "Every 1, 2, 5 or 10 minutes — configurable in Settings to manage API usage."
+                    a: "In the foreground chocks refreshes up to every 30 seconds. Background and Live Activity updates follow the interval selected in Settings."
+                )
+            }
+
+            Section("Sky View AR") {
+                FAQItem(
+                    q: "Why does AR need the camera?",
+                    a: "The camera lets chocks align aircraft cards with the sky. Camera images stay on your device and are never stored or uploaded."
+                )
+                FAQItem(
+                    q: "Why can an AR card be slightly off?",
+                    a: "AR alignment depends on GPS, aircraft data latency, device compass accuracy and AR tracking. Move slowly and recalibrate if chocks shows low compass accuracy."
                 )
             }
 
@@ -55,7 +66,7 @@ struct HelpView: View {
                 )
                 FAQItem(
                     q: "What does Live Activity show?",
-                    a: "Nearby aircraft on your Lock Screen and Dynamic Island. It switches to Favorite mode when a tracked registration is airborne, and ends automatically when it lands."
+                    a: "Nearby aircraft on your Lock Screen and Dynamic Island. If a saved favorite is currently in range, chocks prioritizes it over the nearest aircraft."
                 )
                 FAQItem(
                     q: "Does Live Activity drain my battery?",
@@ -66,7 +77,7 @@ struct HelpView: View {
             Section("Pricing & Support") {
                 FAQItem(
                     q: "Is there a subscription?",
-                    a: "No. SkyScope is a one-time purchase (~€1.99) — no subscriptions or in-app purchases."
+                    a: "No. chocks is a one-time paid download with all features included, no subscriptions and no in-app purchases."
                 )
                 FAQItem(
                     q: "I found a bug or have an idea.",

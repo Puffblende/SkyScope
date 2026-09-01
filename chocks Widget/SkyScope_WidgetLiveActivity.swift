@@ -2,9 +2,9 @@ import ActivityKit
 import WidgetKit
 import SwiftUI
 
-struct SkyScope_WidgetLiveActivity: Widget {
+struct ChocksWidgetLiveActivity: Widget {
     var body: some WidgetConfiguration {
-        ActivityConfiguration(for: SkyScopeActivityAttributes.self) { context in
+        ActivityConfiguration(for: ChocksActivityAttributes.self) { context in
             // MARK: - Lock Screen / Banner
             Group {
                 if context.state.lockScreenStyle == "radar" {
@@ -13,7 +13,7 @@ struct SkyScope_WidgetLiveActivity: Widget {
                     TelemetryLockScreenView(state: context.state)
                 }
             }
-            .widgetURL(URL(string: "skyscope://aircraft/\(context.state.callsign.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? context.state.callsign)"))
+            .widgetURL(URL(string: "chocks://aircraft/\(context.state.callsign.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? context.state.callsign)"))
             .activityBackgroundTint(Color.black)
             .activitySystemActionForegroundColor(Color.blue)
 
@@ -155,7 +155,7 @@ struct SkyScope_WidgetLiveActivity: Widget {
 // MARK: - Telemetry Lock Screen Layout (default)
 
 private struct TelemetryLockScreenView: View {
-    let state: SkyScopeActivityAttributes.ContentValues
+    let state: ChocksActivityAttributes.ContentValues
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -230,7 +230,7 @@ private struct TelemetryLockScreenView: View {
 // MARK: - Radar Lock Screen Layout
 
 private struct RadarLockScreenView: View {
-    let state: SkyScopeActivityAttributes.ContentValues
+    let state: ChocksActivityAttributes.ContentValues
 
     var body: some View {
         HStack(spacing: 16) {
@@ -386,10 +386,10 @@ struct RouteProgressView: View {
 
 // MARK: - Previews
 
-#Preview("Lock Screen – Telemetry", as: .content, using: SkyScopeActivityAttributes(userLocation: "SkyScope")) {
-    SkyScope_WidgetLiveActivity()
+#Preview("Lock Screen – Telemetry", as: .content, using: ChocksActivityAttributes(userLocation: "chocks")) {
+    ChocksWidgetLiveActivity()
 } contentStates: {
-    SkyScopeActivityAttributes.ContentValues(
+    ChocksActivityAttributes.ContentValues(
         callsign: "LH2312",
         altitude: "34,000 ft",
         speed: "452 kts",
@@ -411,10 +411,10 @@ struct RouteProgressView: View {
     )
 }
 
-#Preview("Lock Screen – Radar", as: .content, using: SkyScopeActivityAttributes(userLocation: "SkyScope")) {
-    SkyScope_WidgetLiveActivity()
+#Preview("Lock Screen – Radar", as: .content, using: ChocksActivityAttributes(userLocation: "chocks")) {
+    ChocksWidgetLiveActivity()
 } contentStates: {
-    SkyScopeActivityAttributes.ContentValues(
+    ChocksActivityAttributes.ContentValues(
         callsign: "LH2312",
         altitude: "34,000 ft",
         speed: "452 kts",
@@ -432,10 +432,10 @@ struct RouteProgressView: View {
     )
 }
 
-#Preview("DI – Proximity", as: .content, using: SkyScopeActivityAttributes(userLocation: "SkyScope")) {
-    SkyScope_WidgetLiveActivity()
+#Preview("DI – Proximity", as: .content, using: ChocksActivityAttributes(userLocation: "chocks")) {
+    ChocksWidgetLiveActivity()
 } contentStates: {
-    SkyScopeActivityAttributes.ContentValues(
+    ChocksActivityAttributes.ContentValues(
         callsign: "LH2312",
         altitude: "34,000 ft",
         speed: "452 kts",

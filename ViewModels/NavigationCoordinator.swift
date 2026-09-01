@@ -27,10 +27,10 @@ final class NavigationCoordinator {
         selectedTab = .map
     }
 
-    /// Called from onOpenURL. Parses `skyscope://aircraft/<callsign>` URLs produced
+    /// Called from onOpenURL. Parses `chocks://aircraft/<callsign>` URLs produced
     /// by the Live Activity widget tap and stores the callsign for MapView to consume.
     func handleOpenURL(_ url: URL) {
-        guard url.scheme == "skyscope", url.host == "aircraft" else { return }
+        guard url.scheme == "chocks", url.host == "aircraft" else { return }
         let raw = url.lastPathComponent
         guard !raw.isEmpty else { return }
         pendingDeepLinkCallsign = raw.removingPercentEncoding ?? raw
