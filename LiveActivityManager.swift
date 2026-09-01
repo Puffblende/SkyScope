@@ -3,7 +3,7 @@ import ActivityKit
 import Observation
 import CoreLocation
 
-/// Manages the single chocks Live Activity.
+/// Manages the single Chocks Live Activity.
 ///
 /// The update flow is intentionally simple:
 ///   1. The data store's polling loop fetches new aircraft on the configured interval.
@@ -53,7 +53,7 @@ final class LiveActivityManager {
             return
         }
 
-        let attributes = ChocksActivityAttributes(userLocation: "chocks")
+        let attributes = ChocksActivityAttributes(userLocation: "Chocks")
         let initialState = await makeState(from: aircraft)
 
         do {

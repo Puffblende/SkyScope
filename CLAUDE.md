@@ -187,7 +187,7 @@ chocks/
 
 ├── LiveActivity/
 
-│   ├── chocksActivityAttributes.swift
+│   ├── ChocksActivityAttributes.swift
 
 │   └── FavoriteActivityAttributes.swift
 

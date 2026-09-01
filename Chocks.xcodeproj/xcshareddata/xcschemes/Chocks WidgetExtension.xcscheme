@@ -17,9 +17,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "95FB72602FC8679900FA9D48"
-               BuildableName = "SkyScope WidgetExtension.appex"
-               BlueprintName = "SkyScope WidgetExtension"
-               ReferencedContainer = "container:SkyScope.xcodeproj">
+               BuildableName = "Chocks WidgetExtension.appex"
+               BlueprintName = "Chocks WidgetExtension"
+               ReferencedContainer = "container:Chocks.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
          <BuildActionEntry
@@ -31,9 +31,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "95692F2E2FC26B4600112CE6"
-               BuildableName = "SkyScope.app"
-               BlueprintName = "SkyScope"
-               ReferencedContainer = "container:SkyScope.xcodeproj">
+               BuildableName = "Chocks.app"
+               BlueprintName = "Chocks"
+               ReferencedContainer = "container:Chocks.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -64,18 +64,18 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "95FB72602FC8679900FA9D48"
-            BuildableName = "SkyScope WidgetExtension.appex"
-            BlueprintName = "SkyScope WidgetExtension"
-            ReferencedContainer = "container:SkyScope.xcodeproj">
+            BuildableName = "Chocks WidgetExtension.appex"
+            BlueprintName = "Chocks WidgetExtension"
+            ReferencedContainer = "container:Chocks.xcodeproj">
          </BuildableReference>
       </RemoteRunnable>
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "95692F2E2FC26B4600112CE6"
-            BuildableName = "SkyScope.app"
-            BlueprintName = "SkyScope"
-            ReferencedContainer = "container:SkyScope.xcodeproj">
+            BuildableName = "Chocks.app"
+            BlueprintName = "Chocks"
+            ReferencedContainer = "container:Chocks.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <EnvironmentVariables>
@@ -109,9 +109,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "95692F2E2FC26B4600112CE6"
-            BuildableName = "SkyScope.app"
-            BlueprintName = "SkyScope"
-            ReferencedContainer = "container:SkyScope.xcodeproj">
+            BuildableName = "Chocks.app"
+            BlueprintName = "Chocks"
+            ReferencedContainer = "container:Chocks.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

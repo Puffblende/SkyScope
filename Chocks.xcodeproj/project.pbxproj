@@ -53,7 +53,7 @@
 		95FB72222FC799DA00FA9D48 /* ChocksActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95FB72202FC799DA00FA9D48 /* ChocksActivityAttributes.swift */; };
 		95FB72622FC8679900FA9D48 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 95FB722A2FC7A0F600FA9D48 /* WidgetKit.framework */; };
 		95FB72632FC8679900FA9D48 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 95FB722C2FC7A0F600FA9D48 /* SwiftUI.framework */; };
-		95FB72742FC8679A00FA9D48 /* SkyScope WidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 95FB72612FC8679900FA9D48 /* SkyScope WidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		95FB72742FC8679A00FA9D48 /* Chocks WidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 95FB72612FC8679900FA9D48 /* Chocks WidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		95FB72792FC8696B00FA9D48 /* ChocksActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95FB72202FC799DA00FA9D48 /* ChocksActivityAttributes.swift */; };
 		A1C6A2348BB96A1F12F80170 /* FirebaseInstallations in Frameworks */ = {isa = PBXBuildFile; productRef = EAAF28621F0086BBAD47A814 /* FirebaseInstallations */; };
 		AAC18553E2C74252BA819A5F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 503153570229F54343451459 /* AppDelegate.swift */; };
@@ -66,7 +66,7 @@
 			containerPortal = 95692F272FC26B4600112CE6 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 95FB72602FC8679900FA9D48;
-			remoteInfo = "SkyScope WidgetExtension";
+			remoteInfo = "Chocks WidgetExtension";
 		};
 /* End PBXContainerItemProxy section */
 
@@ -77,7 +77,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				95FB72742FC8679A00FA9D48 /* SkyScope WidgetExtension.appex in Embed Foundation Extensions */,
+				95FB72742FC8679A00FA9D48 /* Chocks WidgetExtension.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -91,7 +91,7 @@
 		95058476304386BC00DFA3D6 /* ARAircraftProjection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARAircraftProjection.swift; sourceTree = "<group>"; };
 		950584783043870C00DFA3D6 /* ARAircraftView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARAircraftView.swift; sourceTree = "<group>"; };
 		9505847A3044CC4F00DFA3D6 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		95692F2F2FC26B4600112CE6 /* SkyScope.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SkyScope.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		95692F2F2FC26B4600112CE6 /* Chocks.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Chocks.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		95692F3D2FC26CBB00112CE6 /* CLAUDE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CLAUDE.md; sourceTree = "<group>"; };
 		956D58102FC3A82100E2503F /* Aircraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Aircraft.swift; sourceTree = "<group>"; };
 		956D58112FC3A82E00E2503F /* Favorite.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Favorite.swift; sourceTree = "<group>"; };
@@ -134,27 +134,27 @@
 		95FB72232FC79CBC00FA9D48 /* chocks.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = chocks.entitlements; sourceTree = "<group>"; };
 		95FB722A2FC7A0F600FA9D48 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		95FB722C2FC7A0F600FA9D48 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
-		95FB725B2FC7A31300FA9D48 /* chocks WidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "chocks WidgetExtension.entitlements"; sourceTree = "<group>"; };
-		95FB72612FC8679900FA9D48 /* SkyScope WidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "SkyScope WidgetExtension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
+		95FB725B2FC7A31300FA9D48 /* Chocks WidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Chocks WidgetExtension.entitlements"; sourceTree = "<group>"; };
+		95FB72612FC8679900FA9D48 /* Chocks WidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "Chocks WidgetExtension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		95FB72752FC8679A00FA9D48 /* Exceptions for "chocks Widget" folder in "SkyScope WidgetExtension" target */ = {
+		95FB72752FC8679A00FA9D48 /* Exceptions for "Chocks Widget" folder in "Chocks WidgetExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
-			target = 95FB72602FC8679900FA9D48 /* SkyScope WidgetExtension */;
+			target = 95FB72602FC8679900FA9D48 /* Chocks WidgetExtension */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		95FB72642FC8679900FA9D48 /* chocks Widget */ = {
+		95FB72642FC8679900FA9D48 /* Chocks Widget */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				95FB72752FC8679A00FA9D48 /* Exceptions for "chocks Widget" folder in "SkyScope WidgetExtension" target */,
+				95FB72752FC8679A00FA9D48 /* Exceptions for "Chocks Widget" folder in "Chocks WidgetExtension" target */,
 			);
-			path = "chocks Widget";
+			path = "Chocks Widget";
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -187,11 +187,11 @@
 			children = (
 				95B452FB2FD609520059921E /* AirportCoordinatesService.swift */,
 				95A084252FC8FBE7003034F6 /* LiveActivityManager.swift */,
-				95FB725B2FC7A31300FA9D48 /* chocks WidgetExtension.entitlements */,
+				95FB725B2FC7A31300FA9D48 /* Chocks WidgetExtension.entitlements */,
 				95FB72232FC79CBC00FA9D48 /* chocks.entitlements */,
 				956D58372FC3B52E00E2503F /* chocks-Info.plist */,
 				95692F3D2FC26CBB00112CE6 /* CLAUDE.md */,
-				95FB72642FC8679900FA9D48 /* chocks Widget */,
+				95FB72642FC8679900FA9D48 /* Chocks Widget */,
 				95FB72292FC7A0F600FA9D48 /* Frameworks */,
 				95692F302FC26B4600112CE6 /* Products */,
 				956D580F2FC3A82100E2503F /* Models */,
@@ -211,8 +211,8 @@
 		95692F302FC26B4600112CE6 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				95692F2F2FC26B4600112CE6 /* SkyScope.app */,
-				95FB72612FC8679900FA9D48 /* SkyScope WidgetExtension.appex */,
+				95692F2F2FC26B4600112CE6 /* Chocks.app */,
+				95FB72612FC8679900FA9D48 /* Chocks WidgetExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -323,9 +323,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		95692F2E2FC26B4600112CE6 /* SkyScope */ = {
+		95692F2E2FC26B4600112CE6 /* Chocks */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 95692F3A2FC26B4700112CE6 /* Build configuration list for PBXNativeTarget "SkyScope" */;
+			buildConfigurationList = 95692F3A2FC26B4700112CE6 /* Build configuration list for PBXNativeTarget "Chocks" */;
 			buildPhases = (
 				95692F2B2FC26B4600112CE6 /* Sources */,
 				95692F2C2FC26B4600112CE6 /* Frameworks */,
@@ -337,19 +337,19 @@
 			dependencies = (
 				95FB72732FC8679A00FA9D48 /* PBXTargetDependency */,
 			);
-			name = SkyScope;
+			name = Chocks;
 			packageProductDependencies = (
 				9520359C3028CA72007394C2 /* FirebaseMessaging */,
 				906DC6CBCA03D2B862355335 /* FirebaseCore */,
 				EAAF28621F0086BBAD47A814 /* FirebaseInstallations */,
 			);
-			productName = SkyScope;
-			productReference = 95692F2F2FC26B4600112CE6 /* SkyScope.app */;
+			productName = Chocks;
+			productReference = 95692F2F2FC26B4600112CE6 /* Chocks.app */;
 			productType = "com.apple.product-type.application";
 		};
-		95FB72602FC8679900FA9D48 /* SkyScope WidgetExtension */ = {
+		95FB72602FC8679900FA9D48 /* Chocks WidgetExtension */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 95FB72762FC8679A00FA9D48 /* Build configuration list for PBXNativeTarget "SkyScope WidgetExtension" */;
+			buildConfigurationList = 95FB72762FC8679A00FA9D48 /* Build configuration list for PBXNativeTarget "Chocks WidgetExtension" */;
 			buildPhases = (
 				95FB725D2FC8679900FA9D48 /* Sources */,
 				95FB725E2FC8679900FA9D48 /* Frameworks */,
@@ -360,11 +360,11 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				95FB72642FC8679900FA9D48 /* chocks Widget */,
+				95FB72642FC8679900FA9D48 /* Chocks Widget */,
 			);
-			name = "SkyScope WidgetExtension";
-			productName = "SkyScope WidgetExtension";
-			productReference = 95FB72612FC8679900FA9D48 /* SkyScope WidgetExtension.appex */;
+			name = "Chocks WidgetExtension";
+			productName = "Chocks WidgetExtension";
+			productReference = 95FB72612FC8679900FA9D48 /* Chocks WidgetExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
@@ -385,7 +385,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 95692F2A2FC26B4600112CE6 /* Build configuration list for PBXProject "SkyScope" */;
+			buildConfigurationList = 95692F2A2FC26B4600112CE6 /* Build configuration list for PBXProject "Chocks" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -402,8 +402,8 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				95692F2E2FC26B4600112CE6 /* SkyScope */,
-				95FB72602FC8679900FA9D48 /* SkyScope WidgetExtension */,
+				95692F2E2FC26B4600112CE6 /* Chocks */,
+				95FB72602FC8679900FA9D48 /* Chocks WidgetExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -490,7 +490,7 @@
 /* Begin PBXTargetDependency section */
 		95FB72732FC8679A00FA9D48 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 95FB72602FC8679900FA9D48 /* SkyScope WidgetExtension */;
+			target = 95FB72602FC8679900FA9D48 /* Chocks WidgetExtension */;
 			targetProxy = 95FB72722FC8679A00FA9D48 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -620,16 +620,16 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = SkyScope.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Chocks.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 9XW69X88LP;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "SkyScope-Info.plist";
+				INFOPLIST_FILE = "Chocks-Info.plist";
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "kyScope uses your location to find aircraft nearby — including while the screen is locked, so Live Activities can keep updating.";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "SkyScope uses your location to find aircraft flying near you.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Chocks uses your location to find aircraft flying near you.";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -641,7 +641,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = DK.SkyScope;
+				PRODUCT_BUNDLE_IDENTIFIER = com.puffblende.chocks;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -659,16 +659,16 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = SkyScope.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Chocks.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 9XW69X88LP;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "SkyScope-Info.plist";
+				INFOPLIST_FILE = "Chocks-Info.plist";
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "kyScope uses your location to find aircraft nearby — including while the screen is locked, so Live Activities can keep updating.";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "SkyScope uses your location to find aircraft flying near you.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Chocks uses your location to find aircraft flying near you.";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -680,7 +680,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = DK.SkyScope;
+				PRODUCT_BUNDLE_IDENTIFIER = com.puffblende.chocks;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -698,14 +698,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
-				CODE_SIGN_ENTITLEMENTS = "SkyScope WidgetExtension.entitlements";
+				CODE_SIGN_ENTITLEMENTS = "Chocks WidgetExtension.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 9XW69X88LP;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "SkyScope Widget/Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = "SkyScope Widget";
+				INFOPLIST_FILE = "Chocks Widget/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Chocks Widget";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -713,7 +713,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "DK.SkyScope.SkyScope-Widget";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.puffblende.chocks.widget";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -730,14 +730,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
-				CODE_SIGN_ENTITLEMENTS = "SkyScope WidgetExtension.entitlements";
+				CODE_SIGN_ENTITLEMENTS = "Chocks WidgetExtension.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 9XW69X88LP;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "SkyScope Widget/Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = "SkyScope Widget";
+				INFOPLIST_FILE = "Chocks Widget/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Chocks Widget";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -745,7 +745,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "DK.SkyScope.SkyScope-Widget";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.puffblende.chocks.widget";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -760,7 +760,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		95692F2A2FC26B4600112CE6 /* Build configuration list for PBXProject "SkyScope" */ = {
+		95692F2A2FC26B4600112CE6 /* Build configuration list for PBXProject "Chocks" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				95692F382FC26B4700112CE6 /* Debug */,
@@ -769,7 +769,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		95692F3A2FC26B4700112CE6 /* Build configuration list for PBXNativeTarget "SkyScope" */ = {
+		95692F3A2FC26B4700112CE6 /* Build configuration list for PBXNativeTarget "Chocks" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				95692F3B2FC26B4700112CE6 /* Debug */,
@@ -778,7 +778,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		95FB72762FC8679A00FA9D48 /* Build configuration list for PBXNativeTarget "SkyScope WidgetExtension" */ = {
+		95FB72762FC8679A00FA9D48 /* Build configuration list for PBXNativeTarget "Chocks WidgetExtension" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				95FB72772FC8679A00FA9D48 /* Debug */,

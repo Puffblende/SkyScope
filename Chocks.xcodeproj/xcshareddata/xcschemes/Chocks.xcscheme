@@ -16,9 +16,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "95692F2E2FC26B4600112CE6"
-               BuildableName = "SkyScope.app"
-               BlueprintName = "SkyScope"
-               ReferencedContainer = "container:SkyScope.xcodeproj">
+               BuildableName = "Chocks.app"
+               BlueprintName = "Chocks"
+               ReferencedContainer = "container:Chocks.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -46,9 +46,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "95692F2E2FC26B4600112CE6"
-            BuildableName = "SkyScope.app"
-            BlueprintName = "SkyScope"
-            ReferencedContainer = "container:SkyScope.xcodeproj">
+            BuildableName = "Chocks.app"
+            BlueprintName = "Chocks"
+            ReferencedContainer = "container:Chocks.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -63,9 +63,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "95692F2E2FC26B4600112CE6"
-            BuildableName = "SkyScope.app"
-            BlueprintName = "SkyScope"
-            ReferencedContainer = "container:SkyScope.xcodeproj">
+            BuildableName = "Chocks.app"
+            BlueprintName = "Chocks"
+            ReferencedContainer = "container:Chocks.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

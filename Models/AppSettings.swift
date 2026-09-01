@@ -328,6 +328,8 @@ final class SettingsStore {
     }
 
     private nonisolated static let keychainService = "com.chocks.openSky"
+    // Alter Bundle-Identifier vor der Umbenennung auf Chocks -
+    // NICHT aendern, migriert bestehende Keychain-Eintraege.
     private nonisolated static let legacyKeychainService = "DK.SkyScope"
 
     private static func openSkyPasswordKeychainQuery(service: String = keychainService) -> [String: Any] {

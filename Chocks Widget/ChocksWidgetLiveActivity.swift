@@ -386,7 +386,7 @@ struct RouteProgressView: View {
 
 // MARK: - Previews
 
-#Preview("Lock Screen – Telemetry", as: .content, using: ChocksActivityAttributes(userLocation: "chocks")) {
+#Preview("Lock Screen – Telemetry", as: .content, using: ChocksActivityAttributes(userLocation: "Chocks")) {
     ChocksWidgetLiveActivity()
 } contentStates: {
     ChocksActivityAttributes.ContentValues(
@@ -411,7 +411,7 @@ struct RouteProgressView: View {
     )
 }
 
-#Preview("Lock Screen – Radar", as: .content, using: ChocksActivityAttributes(userLocation: "chocks")) {
+#Preview("Lock Screen – Radar", as: .content, using: ChocksActivityAttributes(userLocation: "Chocks")) {
     ChocksWidgetLiveActivity()
 } contentStates: {
     ChocksActivityAttributes.ContentValues(
@@ -432,7 +432,7 @@ struct RouteProgressView: View {
     )
 }
 
-#Preview("DI – Proximity", as: .content, using: ChocksActivityAttributes(userLocation: "chocks")) {
+#Preview("DI – Proximity", as: .content, using: ChocksActivityAttributes(userLocation: "Chocks")) {
     ChocksWidgetLiveActivity()
 } contentStates: {
     ChocksActivityAttributes.ContentValues(
