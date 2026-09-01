@@ -110,7 +110,7 @@
 		956D58242FC3A97A00E2503F /* FavoritesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoritesView.swift; sourceTree = "<group>"; };
 		956D58252FC3A98D00E2503F /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		956D58272FC3A9AC00E2503F /* WhatsOverMeIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhatsOverMeIntent.swift; sourceTree = "<group>"; };
-		956D58372FC3B52E00E2503F /* chocks-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "chocks-Info.plist"; sourceTree = "<group>"; };
+		956D58372FC3B52E00E2503F /* Chocks-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Chocks-Info.plist"; sourceTree = "<group>"; };
 		956D58382FC488A500E2503F /* NavigationCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationCoordinator.swift; sourceTree = "<group>"; };
 		956D583A2FC508A000E2503F /* AdsbdbService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdsbdbService.swift; sourceTree = "<group>"; };
 		956D583C2FC63F2800E2503F /* AircraftSilhouetteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AircraftSilhouetteView.swift; sourceTree = "<group>"; };
@@ -131,7 +131,7 @@
 		95B0EAE1303E425D002EBF33 /* WeatherOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherOverlayView.swift; sourceTree = "<group>"; };
 		95B452FB2FD609520059921E /* AirportCoordinatesService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirportCoordinatesService.swift; sourceTree = "<group>"; };
 		95FB72202FC799DA00FA9D48 /* ChocksActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChocksActivityAttributes.swift; sourceTree = "<group>"; };
-		95FB72232FC79CBC00FA9D48 /* chocks.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = chocks.entitlements; sourceTree = "<group>"; };
+		95FB72232FC79CBC00FA9D48 /* Chocks.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Chocks.entitlements; sourceTree = "<group>"; };
 		95FB722A2FC7A0F600FA9D48 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		95FB722C2FC7A0F600FA9D48 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		95FB725B2FC7A31300FA9D48 /* Chocks WidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Chocks WidgetExtension.entitlements"; sourceTree = "<group>"; };
@@ -188,8 +188,8 @@
 				95B452FB2FD609520059921E /* AirportCoordinatesService.swift */,
 				95A084252FC8FBE7003034F6 /* LiveActivityManager.swift */,
 				95FB725B2FC7A31300FA9D48 /* Chocks WidgetExtension.entitlements */,
-				95FB72232FC79CBC00FA9D48 /* chocks.entitlements */,
-				956D58372FC3B52E00E2503F /* chocks-Info.plist */,
+				95FB72232FC79CBC00FA9D48 /* Chocks.entitlements */,
+				956D58372FC3B52E00E2503F /* Chocks-Info.plist */,
 				95692F3D2FC26CBB00112CE6 /* CLAUDE.md */,
 				95FB72642FC8679900FA9D48 /* Chocks Widget */,
 				95FB72292FC7A0F600FA9D48 /* Frameworks */,
