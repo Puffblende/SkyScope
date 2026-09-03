@@ -59,7 +59,7 @@ final class LiveActivityManager {
         do {
             let activity = try Activity<ChocksActivityAttributes>.request(
                 attributes: attributes,
-                content: .init(state: initialState, staleDate: Date.now.addingTimeInterval(5 * 60)),
+                content: .init(state: initialState, staleDate: Date.now.addingTimeInterval(Double(SettingsStore.shared.refreshInterval.rawValue) + 60)),
                 pushType: nil
             )
             self.liveActivity = activity
@@ -101,7 +101,7 @@ final class LiveActivityManager {
         }
 
         let newState = await makeState(from: aircraft)
-        await activity.update(ActivityContent(state: newState, staleDate: Date.now.addingTimeInterval(5 * 60)))
+        await activity.update(ActivityContent(state: newState, staleDate: Date.now.addingTimeInterval(Double(SettingsStore.shared.refreshInterval.rawValue) + 60)))
         #if DEBUG
         print("[LAM] Updated → \(aircraft.displayName)")
         #endif

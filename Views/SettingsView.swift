@@ -1,12 +1,14 @@
 import SwiftUI
 import ActivityKit
 import AVFoundation
+import CoreLocation
 import UIKit
 
 struct SettingsView: View {
     @Environment(SettingsStore.self) private var settings
     @Environment(AircraftDataStore.self) private var dataStore
     @Environment(ARPermissionStore.self) private var arPermission
+    @Environment(LocationService.self) private var location
     @Environment(\.scenePhase) private var scenePhase
 
     @State private var showRefreshInfo = false
@@ -189,6 +191,39 @@ struct SettingsView: View {
                         .buttonStyle(.plain)
                     }
 
+                    Text("When Live Activity is running, chocks uses continuous GPS to keep the Lock Screen updated. Expect increased battery usage and a persistent blue location indicator in the status bar.")
+                        .font(.system(size: 13))
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 32)
+                        .padding(.top, 4)
+                        .padding(.bottom, location.authorizationStatus == .authorizedWhenInUse ? 8 : 16)
+
+                    if location.authorizationStatus == .authorizedWhenInUse {
+                        HStack(alignment: .top, spacing: 8) {
+                            Image(systemName: "location.slash.fill")
+                                .font(.system(size: 13))
+                                .foregroundStyle(.orange)
+                                .padding(.top, 1)
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Background updates require \"Always\" location access. The Live Activity will only refresh while chocks is open.")
+                                    .font(.system(size: 13))
+                                    .foregroundStyle(.orange)
+                                Button("Open Settings →") {
+                                    if let url = URL(string: UIApplication.openSettingsURLString) {
+                                        UIApplication.shared.open(url)
+                                    }
+                                }
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundStyle(.orange)
+                                .buttonStyle(.plain)
+                            }
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 32)
+                        .padding(.bottom, 16)
+                    }
+
                     // MARK: Dynamic Island Style
                     VStack(alignment: .leading, spacing: 6) {
                         Text("Dynamic Island pairing")
@@ -318,7 +353,7 @@ struct SettingsView: View {
             .background(Color(.systemGroupedBackground))
             .scrollDismissesKeyboard(.immediately)
             .navigationTitle("Settings")
-            .navigationBarTitleDisplayMode(.large)
+            .navigationBarTitleDisplayMode(.automatic)
         }
         .onAppear {
             refreshARPermissionState()

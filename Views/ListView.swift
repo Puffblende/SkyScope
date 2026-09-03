@@ -54,7 +54,7 @@ struct ListView: View {
                 }
             }
             .navigationTitle("Aircraft Nearby")
-            .navigationBarTitleDisplayMode(.large)
+            .navigationBarTitleDisplayMode(.automatic)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     if dataStore.isLoading && !isRefreshing {

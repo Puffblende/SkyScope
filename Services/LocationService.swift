@@ -25,6 +25,9 @@ final class LocationService: NSObject {
 
     private let manager: CLLocationManager
     private var lastLiveActivityUpdate: Date = .distantPast
+    /// Remembers whether background updates were requested so we can re-apply
+    /// allowsBackgroundLocationUpdates once the user upgrades to Always auth.
+    private var backgroundUpdatesDesired = false
 
     override init() {
         let manager = CLLocationManager()
@@ -75,8 +78,24 @@ final class LocationService: NSObject {
     /// Opt in to background updates. The caller must ensure the entitlement
     /// "location" background mode is configured in Info.plist.
     func enableBackgroundUpdates(_ enabled: Bool) {
-        manager.allowsBackgroundLocationUpdates = enabled
-        manager.showsBackgroundLocationIndicator = enabled
+        backgroundUpdatesDesired = enabled
+        if enabled {
+            // Continuous GPS keeps the process awake even when stationary.
+            manager.pausesLocationUpdatesAutomatically = false
+            manager.distanceFilter = kCLDistanceFilterNone
+            if authorizationStatus != .authorizedAlways {
+                // Prompt the user to upgrade to Always if not yet granted.
+                manager.requestAlwaysAuthorization()
+            }
+            let hasAlways = authorizationStatus == .authorizedAlways
+            manager.allowsBackgroundLocationUpdates = hasAlways
+            manager.showsBackgroundLocationIndicator = hasAlways
+        } else {
+            manager.pausesLocationUpdatesAutomatically = true
+            manager.distanceFilter = 250
+            manager.allowsBackgroundLocationUpdates = false
+            manager.showsBackgroundLocationIndicator = false
+        }
     }
 }
 
@@ -86,6 +105,12 @@ extension LocationService: CLLocationManagerDelegate {
             self.authorizationStatus = manager.authorizationStatus
             if manager.authorizationStatus == .authorizedWhenInUse || manager.authorizationStatus == .authorizedAlways {
                 manager.startUpdatingLocation()
+            }
+            // If the user just upgraded to Always while background updates were
+            // already requested, apply the flag now.
+            if manager.authorizationStatus == .authorizedAlways && self.backgroundUpdatesDesired {
+                manager.allowsBackgroundLocationUpdates = true
+                manager.showsBackgroundLocationIndicator = true
             }
         }
     }
@@ -98,8 +123,9 @@ extension LocationService: CLLocationManagerDelegate {
             self.currentLocation = latest
             self.lastError = nil
 
-            // Throttle Live Activity updates to once per 60 seconds
-            if Date().timeIntervalSince(self.lastLiveActivityUpdate) > 60 {
+            // Throttle to the configured refresh interval so rapid location
+            // callbacks don't trigger API calls faster than the user's chosen cadence.
+            if Date().timeIntervalSince(self.lastLiveActivityUpdate) > Double(SettingsStore.shared.refreshInterval.rawValue) {
                 self.lastLiveActivityUpdate = Date()
                 self.onLocationUpdate?(latest)
             }

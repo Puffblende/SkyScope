@@ -19,6 +19,7 @@ struct MapView: View {
     @Environment(NavigationCoordinator.self) private var navigation
     @Environment(FollowStore.self) private var follow
     @Environment(ARPermissionStore.self) private var arPermission
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
     @Query private var favorites: [Favorite]
 
     @State private var cameraPosition: MapCameraPosition = .automatic
@@ -77,7 +78,7 @@ struct MapView: View {
                             .stroke(Color.accentColor.opacity(0.6), lineWidth: 1.5)
 
                         if !headingModeEnabled, location.heading != nil {
-                            Annotation("Heading cone", coordinate: userCoord, anchor: .center) {
+                            Annotation("", coordinate: userCoord, anchor: .center) {
                                 DirectionConeView(
                                     angleDegrees: compassHeading - cam.heading,
                                     color: settings.coneColor
@@ -158,26 +159,30 @@ struct MapView: View {
                 mapTopOverlay
             }
             .overlay(alignment: .bottom) {
-                RadiusSliderPanel()
-                    .padding(.bottom, 16)
+                if verticalSizeClass != .compact {
+                    RadiusSliderPanel()
+                        .padding(.bottom, 16)
+                }
             }
             .overlay(alignment: .trailing) {
-                VStack(spacing: 0) {
-                    mapStyleButton
-                    Divider().frame(width: 44)
-                    headingModeButton
-                    Divider().frame(width: 44)
-                    fitRadiusButton
-                    if canShowARButton {
+                if verticalSizeClass != .compact {
+                    VStack(spacing: 0) {
+                        mapStyleButton
                         Divider().frame(width: 44)
-                        arButton
+                        headingModeButton
+                        Divider().frame(width: 44)
+                        fitRadiusButton
+                        if canShowARButton {
+                            Divider().frame(width: 44)
+                            arButton
+                        }
+                        Divider().frame(width: 44)
+                        weatherButton
                     }
-                    Divider().frame(width: 44)
-                    weatherButton
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+                    .shadow(color: .black.opacity(0.12), radius: 6, y: 1)
+                    .padding(.trailing, 16)
                 }
-                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
-                .shadow(color: .black.opacity(0.12), radius: 6, y: 1)
-                .padding(.trailing, 16)
             }
             .sheet(item: $selectedAircraft) { aircraft in
                 AircraftDetailSheet(
@@ -344,60 +349,46 @@ struct MapView: View {
     }
 
     private var mapTopOverlay: some View {
-        ZStack(alignment: .top) {
-            LinearGradient(
-                colors: [
-                    Color.black.opacity(0.62),
-                    Color.black.opacity(0.28),
-                    Color.black.opacity(0.0),
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .frame(height: 176)
-            .ignoresSafeArea(edges: .top)
+        VStack(spacing: 8) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: verticalSizeClass == .compact ? 2 : 7) {
+                    Text("Map")
+                        .font(.system(size: verticalSizeClass == .compact ? 22 : 36, weight: .bold))
+                        .foregroundStyle(.primary)
+                        .lineLimit(1)
 
-            VStack(spacing: 8) {
-                HStack(alignment: .top) {
-                    VStack(alignment: .leading, spacing: 7) {
-                        Text("Map")
-                            .font(.system(size: 36, weight: .bold))
-                            .foregroundStyle(.white)
+                    HStack(spacing: 9) {
+                        Circle()
+                            .fill(Color.green)
+                            .frame(width: 8, height: 8)
+                        Text(mapSubtitle)
+                            .font(.system(size: verticalSizeClass == .compact ? 13 : 17, weight: .semibold))
+                            .foregroundStyle(.secondary)
                             .lineLimit(1)
-
-                        HStack(spacing: 9) {
-                            Circle()
-                                .fill(Color.green)
-                                .frame(width: 8, height: 8)
-                            Text(mapSubtitle)
-                                .font(.system(size: 17, weight: .semibold))
-                                .foregroundStyle(.white.opacity(0.62))
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.8)
-                        }
+                            .minimumScaleFactor(0.8)
                     }
-
-                    Spacer(minLength: 24)
                 }
 
-                if !headingModeEnabled, location.heading != nil {
-                    CompassStripView(heading: compassHeading)
-                        .transition(.opacity.combined(with: .move(edge: .top)))
-                }
-
-                if let error = dataStore.lastError ?? location.lastError {
-                    Text(error)
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 6)
-                        .background(Color.black.opacity(0.54), in: Capsule())
-                }
+                Spacer(minLength: 24)
             }
-            .padding(.horizontal, 20)
-            .padding(.top, 8)
-            .animation(.easeInOut(duration: 0.3), value: headingModeEnabled)
+
+            if !headingModeEnabled, location.heading != nil, verticalSizeClass != .compact {
+                CompassStripView(heading: compassHeading)
+                    .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+
+            if let error = dataStore.lastError ?? location.lastError {
+                Text(error)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(Color.black.opacity(0.54), in: Capsule())
+            }
         }
+        .padding(.horizontal, 20)
+        .padding(.top, 8)
+        .animation(.easeInOut(duration: 0.3), value: headingModeEnabled)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .allowsHitTesting(false)
     }
@@ -813,7 +804,7 @@ private struct CompassStripView: View {
                         if let label = tick.label {
                             Text(label)
                                 .font(.system(size: label.count == 1 ? 13 : 12, weight: .semibold))
-                                .foregroundStyle(label == "N" ? Color.red : Color.white.opacity(0.92))
+                                .foregroundStyle(label == "N" ? Color.red : Color.primary)
                                 .frame(height: 16)
                         } else {
                             Color.clear
@@ -844,7 +835,7 @@ private struct CompassStripView: View {
         if tick.label == "N" {
             return Color.red.opacity(0.88)
         }
-        return Color.white.opacity(tick.isMajor ? 0.80 : 0.36)
+        return Color.primary.opacity(tick.isMajor ? 0.80 : 0.36)
     }
 
     private func xOffset(for degree: Double) -> CGFloat {

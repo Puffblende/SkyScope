@@ -73,10 +73,10 @@ struct AirportCardView: View {
                         photoPlaceholder
                     }
                 }
-                .frame(maxWidth: .infinity)
                 .frame(height: 220)
                 .clipShape(RoundedRectangle(cornerRadius: 14))
                 .padding(.horizontal, 16)
+                .frame(maxWidth: .infinity)
                 .padding(.bottom, 20)
 
                 // METAR — always present; shows "not available" for airports without one
@@ -102,12 +102,13 @@ struct AirportCardView: View {
                         showWikipedia = true
                     } label: {
                         Label("Read on Wikipedia", systemImage: "globe")
-                            .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal, 20)
                             .padding(.vertical, 16)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .sheet(isPresented: $showWikipedia) {
             if let url = detail.wikipediaURL {

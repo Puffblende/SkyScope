@@ -37,7 +37,7 @@ final class AircraftDataStore {
 
         // When the device moves while a Live Activity is running, trigger an immediate
         // refresh so the Lock Screen card reflects the latest aircraft positions.
-        // LocationService throttles this callback to once per 60 s internally.
+        // LocationService throttles this callback to the configured refresh interval.
         location.onLocationUpdate = { [weak self] _ in
             guard let self else { return }
             Task { @MainActor [weak self] in

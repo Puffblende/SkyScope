@@ -39,7 +39,7 @@ struct AircraftAnnotation: View {
 
             Circle()
                 // Dark base + coloured ring + coloured icon — same language as the reference.
-                .fill(Color.black.opacity(0.75))
+                .fill(Color.black.opacity(0.58))
                 .frame(width: 34, height: 34)
                 .overlay(Circle().stroke(ringColor, lineWidth: ringWidth))
                 .shadow(color: .black.opacity(0.35), radius: 4, y: 2)
